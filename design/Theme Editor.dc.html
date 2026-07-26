@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Playfair+Display:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Archivo:wght@500;600;700&family=Instrument+Serif:ital@0;1&family=Oswald:wght@400;500;600&family=Sora:wght@400;500;600;700&family=Bricolage+Grotesque:wght@500;600;700&family=DM+Serif+Display&family=Lora:wght@500;600;700&family=Work+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@500;600;700&family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=block" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #f4f4f3; }
+  * { box-sizing: border-box; }
+  body { -webkit-font-smoothing: antialiased; }
+  a { color: #4b5563; text-decoration: none; }
+  a:hover { color: #18181a; }
+  input[type="color"] { -webkit-appearance: none; appearance: none; border: none; padding: 0; background: none; }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
+  ::selection { background: #dcdcf5; }
+</style>
+</helmet>
+
+<div style="font-family: Inter, Helvetica, sans-serif; color: #18181a; background: #f4f4f3; height: 100vh; overflow: hidden; display: flex; flex-direction: column;">
+
+  <header style="height: 56px; flex: 0 0 56px; background: #ffffff; border-bottom: 1px solid #e8e8e6; display: flex; align-items: center; justify-content: space-between; padding: 0 16px 0 20px;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="width: 18px; height: 18px; border-radius: 5px; background: #18181a;"></div>
+        <span style="font-size: 13px; font-weight: 600; letter-spacing: -0.01em;">Counter</span>
+      </div>
+      <div style="width: 1px; height: 20px; background: #e8e8e6;"></div>
+      <nav style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+        <a href="#" style="color: #75757c;">Brands</a>
+        <span style="color: #c9c9c6;">/</span>
+        <span style="font-weight: 500;">{{ name }}</span>
+        <span style="color: #c9c9c6;">/</span>
+        <span style="color: #75757c;">Theme</span>
+      </nav>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 7px; height: 26px; padding: 0 10px 0 8px; border: 1px solid #e8e8e6; border-radius: 13px; background: #fbfbfa;">
+        <span style="width: 6px; height: 6px; border-radius: 50%; background: {{ statusDot }};"></span>
+        <span style="font-size: 12px; color: #55555c; letter-spacing: -0.005em;">{{ statusText }}</span>
+      </div>
+      <button style="height: 30px; padding: 0 12px; font: inherit; font-size: 12.5px; font-weight: 500; color: #2a2a2e; background: #ffffff; border: 1px solid #e0e0dd; border-radius: 7px; cursor: pointer; transition: background 120ms, border-color 120ms;" style-hover="background: #f7f7f6; border-color: #cfcfcb;">Preview</button>
+      <button onClick="{{ openPublish }}" style="height: 30px; padding: 0 13px; font: inherit; font-size: 12.5px; font-weight: 500; color: #ffffff; background: #18181a; border: 1px solid #18181a; border-radius: 7px; cursor: pointer; transition: background 120ms;" style-hover="background: #303036;">Publish</button>
+    </div>
+  </header>
+
+  <div style="flex: 1; display: flex; min-height: 0;">
+
+    <aside style="width: 380px; flex: 0 0 380px; background: #ffffff; border-right: 1px solid #e8e8e6; overflow-y: auto;">
+
+      <div style="padding: 18px 20px 14px;">
+        <div style="font-size: 13px; font-weight: 600; letter-spacing: -0.01em;">Appearance</div>
+        <div style="font-size: 12px; color: #85858b; margin-top: 3px; line-height: 1.45;">Changes apply to the preview instantly. Nothing goes live until you publish.</div>
+      </div>
+
+      <!-- BRAND -->
+      <section style="border-top: 1px solid #ededea;">
+        <button onClick="{{ toggle.brand }}" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 13px 20px; background: none; border: none; cursor: pointer; font: inherit; text-align: left;" style-hover="background: #fbfbfa;">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: #3a3a40;">Brand</span>
+          <span style="font-size: 10px; color: #a3a3a8;">{{ caret.brand }}</span>
+        </button>
+        <sc-if value="{{ open.brand }}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 0 20px 20px; display: flex; flex-direction: column; gap: 16px;">
+            <div>
+              <div style="font-size: 11.5px; font-weight: 500; color: #6b6b72; margin-bottom: 7px;">Logo</div>
+              <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 52px; height: 52px; border-radius: 8px; border: 1px solid #e8e8e6; background: #fbfbfa; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                    {{ logoEl }}
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <button onClick="{{ pickLogo }}" style="font: inherit; font-size: 12px; font-weight: 500; color: #2a2a2e; background: #ffffff; border: 1px solid #e0e0dd; border-radius: 6px; height: 26px; padding: 0 10px; cursor: pointer;" style-hover="background: #f7f7f6;">Replace</button>
+                    <button onClick="{{ clearLogo }}" style="font: inherit; font-size: 12px; color: #85858b; background: none; border: none; padding: 0 0 0 2px; cursor: pointer; text-align: left;" style-hover="color: #18181a;">Remove</button>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noLogo }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ pickLogo }}" style="width: 100%; padding: 18px 14px; border: 1px dashed #dcdcd8; border-radius: 9px; background: #fcfcfb; cursor: pointer; font: inherit; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: border-color 120ms, background 120ms;" style-hover="border-color: #b9b9f0; background: #fafaff;">
+                  <div style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid #e4e4e0; background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #9a9aa0;">+</div>
+                  <div style="font-size: 12.5px; font-weight: 500; color: #3a3a40;">Upload your logo</div>
+                  <div style="font-size: 11px; color: #9a9aa0; font-family: ui-monospace, monospace;">SVG or PNG · square · min 512px</div>
+                </button>
+              </sc-if>
+            </div>
+
+            <div>
+              <div style="font-size: 11.5px; font-weight: 500; color: #6b6b72; margin-bottom: 7px;">Business name</div>
+              <input value="{{ name }}" onChange="{{ setName }}" style="width: 100%; height: 34px; padding: 0 10px; font: inherit; font-size: 13px; color: #18181a; background: #ffffff; border: 1px solid #e0e0dd; border-radius: 7px; outline: none; transition: border-color 120ms, box-shadow 120ms;" style-focus="border-color: #8b8bd6; box-shadow: 0 0 0 3px rgba(120,120,220,0.13);" style-hover="border-color: #cfcfcb;" />
+              <div style="font-size: 11px; color: #9a9aa0; margin-top: 6px;">Shown in the app header and on receipts.</div>
+            </div>
+          </div>
+        </sc-if>
+      </section>
+
+      <!-- COLOR -->
+      <section style="border-top: 1px solid #ededea;">
+        <button onClick="{{ toggle.color }}" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 13px 20px; background: none; border: none; cursor: pointer; font: inherit; text-align: left;" style-hover="background: #fbfbfa;">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: #3a3a40;">Color</span>
+          <span style="font-size: 10px; color: #a3a3a8;">{{ caret.color }}</span>
+        </button>
+        <sc-if value="{{ open.color }}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 0 20px 20px; display: flex; flex-direction: column; gap: 15px;">
+            <sc-for list="{{ colorRows }}" as="row" hint-placeholder-count="4">
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px;">
+                  <span style="font-size: 11.5px; font-weight: 500; color: #6b6b72;">{{ row.label }}</span>
+                  <span style="font-size: 11px; color: #a3a3a8; font-family: ui-monospace, monospace; text-transform: uppercase;">{{ row.value }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 7px;">
+                  <sc-for list="{{ row.presets }}" as="p" hint-placeholder-count="5">
+                    <button onClick="{{ p.onClick }}" title="{{ p.hex }}" style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid rgba(0,0,0,0.09); cursor: pointer; padding: 0; background: {{ p.hex }}; box-shadow: {{ p.ring }}; transition: transform 100ms;" style-hover="transform: scale(1.08);"></button>
+                  </sc-for>
+                  <div style="width: 1px; height: 20px; background: #ededea; margin: 0 2px;"></div>
+                  <label style="position: relative; display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 9px 0 7px; border: 1px solid #e0e0dd; border-radius: 7px; cursor: pointer; background: #ffffff;" style-hover="border-color: #cfcfcb;">
+                    <span style="width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); background: {{ row.value }};"></span>
+                    <span style="font-size: 11.5px; color: #55555c;">Custom</span>
+                    <input type="color" value="{{ row.value }}" onInput="{{ row.onInput }}" style="position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;" />
+                  </label>
+                </div>
+              </div>
+            </sc-for>
+
+            <sc-if value="{{ warn.show }}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; gap: 9px; padding: 10px 11px; border: 1px solid #e9e2d4; background: #fdfaf3; border-radius: 8px;">
+                <span style="flex: 0 0 auto; width: 15px; height: 15px; border-radius: 50%; background: #b98a2e; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px;">!</span>
+                <div>
+                  <div style="font-size: 12px; font-weight: 500; color: #4a3f26; line-height: 1.4;">{{ warn.title }}</div>
+                  <div style="font-size: 11.5px; color: #7d7157; line-height: 1.45; margin-top: 2px;">{{ warn.body }}</div>
+                  <button onClick="{{ warn.fix }}" style="margin-top: 7px; font: inherit; font-size: 11.5px; font-weight: 500; color: #4a3f26; background: #ffffff; border: 1px solid #e0d8c6; border-radius: 6px; height: 24px; padding: 0 9px; cursor: pointer;" style-hover="background: #faf6ec;">Fix automatically</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </section>
+
+      <!-- TYPOGRAPHY -->
+      <section style="border-top: 1px solid #ededea;">
+        <button onClick="{{ toggle.type }}" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 13px 20px; background: none; border: none; cursor: pointer; font: inherit; text-align: left;" style-hover="background: #fbfbfa;">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: #3a3a40;">Typography</span>
+          <span style="font-size: 10px; color: #a3a3a8;">{{ caret.type }}</span>
+        </button>
+        <sc-if value="{{ open.type }}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 0 20px 20px; display: flex; flex-direction: column; gap: 12px;">
+            <div>
+              <div style="font-size: 11.5px; font-weight: 500; color: #6b6b72; margin-bottom: 7px;">Font pairing</div>
+              <div style="position: relative;">
+                <button onClick="{{ toggleTypeMenu }}" style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; background: #ffffff; border: 1px solid {{ typeMenuBorder }}; border-radius: 8px; cursor: pointer; font: inherit; text-align: left; transition: border-color 120ms, box-shadow 120ms;" style-hover="border-color: #cfcfcb;" style-focus="border-color: #8b8bd6; box-shadow: 0 0 0 3px rgba(120,120,220,0.13);">
+                  <span style="display: flex; align-items: baseline; gap: 9px; min-width: 0;">
+                    <span style="font-family: {{ current.head }}; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: #18181a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ current.headName }}</span>
+                    <span style="font-size: 10.5px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #9a9aa0; white-space: nowrap;">{{ current.name }}</span>
+                  </span>
+                  <span style="font-size: 10px; color: #a3a3a8;">{{ typeCaret }}</span>
+                </button>
+
+                <sc-if value="{{ typeOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position: absolute; top: calc(100% + 5px); left: 0; right: 0; z-index: 20; max-height: 296px; overflow-y: auto; background: #ffffff; border: 1px solid #e4e4e0; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 12px 28px rgba(0,0,0,0.11); padding: 5px;">
+                    <sc-for list="{{ pairings }}" as="p" hint-placeholder-count="8">
+                      <button onClick="{{ p.onClick }}" style="width: 100%; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 9px; background: {{ p.bg }}; border: none; border-radius: 7px; cursor: pointer; font: inherit;" style-hover="background: #f7f7f6;">
+                        <span style="min-width: 0;">
+                          <span style="display: block; font-family: {{ p.head }}; font-size: 15.5px; font-weight: 600; letter-spacing: -0.01em; color: #18181a; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.headName }}</span>
+                          <span style="display: block; font-family: {{ p.body }}; font-size: 11px; color: #85858b; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.stack }}</span>
+                        </span>
+                        <span style="display: flex; align-items: center; gap: 7px; flex: 0 0 auto;">
+                          <span style="font-size: 10px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #9a9aa0;">{{ p.name }}</span>
+                          <span style="font-family: 'Material Symbols Rounded'; font-size: 15px; line-height: 1; color: {{ p.checkColor }};">check</span>
+                        </span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size: 11.5px; font-weight: 500; color: #6b6b72; margin-bottom: 7px;">Try your own words</div>
+              <input value="{{ sample }}" onChange="{{ setSample }}" placeholder="Type a dish name or headline" style="width: 100%; height: 32px; padding: 0 10px; font: inherit; font-size: 12.5px; color: #18181a; background: #ffffff; border: 1px solid #e0e0dd; border-radius: 7px; outline: none; transition: border-color 120ms, box-shadow 120ms;" style-focus="border-color: #8b8bd6; box-shadow: 0 0 0 3px rgba(120,120,220,0.13);" style-hover="border-color: #cfcfcb;" />
+              <div style="margin-top: 9px; padding: 13px; border: 1px solid #ededea; background: #fbfbfa; border-radius: 9px;">
+                <div style="font-family: {{ current.head }}; font-size: 21px; font-weight: 600; letter-spacing: -0.015em; color: #18181a; line-height: 1.2; word-break: break-word;">{{ sampleText }}</div>
+                <div style="font-family: {{ current.body }}; font-size: 12px; color: #75757c; margin-top: 6px; line-height: 1.5;">Body text uses {{ current.bodyName }} — “Slow-roasted, charred lemon, salsa verde. $26.00.”</div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </section>
+
+      <!-- SHAPE -->
+      <section style="border-top: 1px solid #ededea;">
+        <button onClick="{{ toggle.shape }}" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 13px 20px; background: none; border: none; cursor: pointer; font: inherit; text-align: left;" style-hover="background: #fbfbfa;">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: #3a3a40;">Shape</span>
+          <span style="font-size: 10px; color: #a3a3a8;">{{ caret.shape }}</span>
+        </button>
+        <sc-if value="{{ open.shape }}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 0 20px 20px;">
+            <div style="font-size: 11.5px; font-weight: 500; color: #6b6b72; margin-bottom: 8px;">Corner radius</div>
+            <div style="display: flex; padding: 3px; gap: 3px; background: #f4f4f3; border: 1px solid #eaeae7; border-radius: 9px;">
+              <sc-for list="{{ radii }}" as="r" hint-placeholder-count="4">
+                <button onClick="{{ r.onClick }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 9px 4px 8px; border: 1px solid {{ r.border }}; background: {{ r.bg }}; border-radius: 7px; cursor: pointer; font: inherit;" style-hover="border-color: #dcdcd8;">
+                  <span style="width: 22px; height: 16px; background: #d6d6d2; border-radius: {{ r.demo }};"></span>
+                  <span style="font-size: 10.5px; font-weight: 500; color: {{ r.color }};">{{ r.name }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="font-size: 11px; color: #9a9aa0; margin-top: 8px;">Applied to cards, images, inputs and buttons together.</div>
+          </div>
+        </sc-if>
+      </section>
+
+      <!-- BUTTONS -->
+      <section style="border-top: 1px solid #ededea; border-bottom: 1px solid #ededea;">
+        <button onClick="{{ toggle.button }}" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 13px 20px; background: none; border: none; cursor: pointer; font: inherit; text-align: left;" style-hover="background: #fbfbfa;">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: #3a3a40;">Buttons</span>
+          <span style="font-size: 10px; color: #a3a3a8;">{{ caret.button }}</span>
+        </button>
+        <sc-if value="{{ open.button }}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 0 20px 22px; display: flex; flex-direction: column; gap: 8px;">
+            <sc-for list="{{ buttonStyles }}" as="b" hint-placeholder-count="3">
+              <button onClick="{{ b.onClick }}" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; background: {{ b.cardBg }}; border: 1px solid {{ b.cardBorder }}; border-radius: 9px; cursor: pointer; font: inherit;" style-hover="border-color: #c4c4c0;">
+                <span style="font-size: 12px; font-weight: 500; color: #3a3a40;">{{ b.name }}</span>
+                <span style="font-size: 12px; font-weight: 600; padding: 7px 14px; background: {{ b.bg }}; color: {{ b.fg }}; border: 1px solid {{ b.border }}; border-radius: {{ b.radius }};">Add to order</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </section>
+
+      <div style="padding: 16px 20px 32px; display: flex; align-items: center; justify-content: space-between;">
+        <button onClick="{{ reset }}" style="font: inherit; font-size: 12px; color: #85858b; background: none; border: none; padding: 0; cursor: pointer;" style-hover="color: #18181a;">Reset to platform default</button>
+        <span style="font-size: 11px; color: #b5b5b8; font-family: ui-monospace, monospace;">v14</span>
+      </div>
+    </aside>
+
+    <!-- CANVAS -->
+    <main style="flex: 1; min-width: 0; background: #f4f4f3; display: flex; flex-direction: column; align-items: center; padding: 22px 24px 40px; overflow-y: auto; position: relative;">
+
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 3px; padding: 3px; background: #ffffff; border: 1px solid #e8e8e6; border-radius: 9px;">
+          <sc-for list="{{ screens }}" as="s" hint-placeholder-count="4">
+            <button onClick="{{ s.onClick }}" style="height: 28px; padding: 0 13px; font: inherit; font-size: 12.5px; font-weight: 500; color: {{ s.color }}; background: {{ s.bg }}; border: none; border-radius: 7px; cursor: pointer; transition: background 120ms;" style-hover="background: #f2f2f0;">{{ s.name }}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; align-items: center; gap: 3px; padding: 3px; background: #ffffff; border: 1px solid #e8e8e6; border-radius: 9px;">
+          <sc-for list="{{ modes }}" as="m" hint-placeholder-count="2">
+            <button onClick="{{ m.onClick }}" title="{{ m.name }} appearance" style="display: flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; font: inherit; font-size: 12.5px; font-weight: 500; color: {{ m.color }}; background: {{ m.bg }}; border: none; border-radius: 7px; cursor: pointer; transition: background 120ms;" style-hover="background: #f2f2f0;">
+              <span style="font-family: 'Material Symbols Rounded'; font-size: 16px; line-height: 1;">{{ m.icon }}</span>{{ m.name }}
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; padding: 9px; background: #232326; border-radius: 46px; box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.07);">
+        <div style="width: 372px; height: 764px; border-radius: 38px; overflow: hidden; position: relative; background: {{ t.bg }}; font-family: {{ t.bodyFont }}; display: flex; flex-direction: column;">
+
+          <div style="height: 44px; flex: 0 0 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; font-size: 12px; font-weight: 600; color: {{ t.ink }};">
+            <span>9:41</span>
+            <span style="letter-spacing: 0.06em; opacity: 0.5;">▮▮▮</span>
+          </div>
+
+          <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+
+            <!-- HOME -->
+            <sc-if value="{{ view.home }}" hint-placeholder-val="{{ true }}">
+              <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="padding: 4px 20px 14px; display: flex; align-items: center; justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 9px;">
+                    <div style="width: 30px; height: 30px; border-radius: {{ t.logoRadius }}; background: {{ t.primary }}; color: {{ t.onPrimary }}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; overflow: hidden;">{{ initials }}</div>
+                    <span style="font-family: {{ t.headFont }}; font-size: 16px; font-weight: 600; color: {{ t.ink }}; letter-spacing: -0.01em;">{{ name }}</span>
+                  </div>
+                  <div style="position: relative; width: 30px; height: 30px; border-radius: 50%; background: {{ t.tint }}; display: flex; align-items: center; justify-content: center; font-family: 'Material Symbols Rounded'; font-size: 16px; line-height: 1; color: {{ t.primary }};">notifications<span style="position: absolute; top: -1px; right: -1px; width: 9px; height: 9px; border-radius: 50%; background: {{ t.accent }}; border: 2px solid {{ t.bg }};"></span></div>
+                </div>
+
+                <div style="padding: 0 20px;">
+                  <div style="position: relative; height: 148px; border-radius: {{ t.radius }}; background-color: {{ t.placeholder }}; background-image: repeating-linear-gradient(135deg, rgba(127,127,127,0.14) 0 6px, transparent 6px 12px); display: flex; align-items: flex-end; padding: 12px;">
+                    <span style="position: absolute; top: 12px; left: 12px; padding: 5px 9px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; background: {{ t.accent }}; color: {{ t.accentInk }}; border-radius: {{ t.pill }};">Tuesday · 2 for 1 pasta</span>
+                    <span style="font-family: ui-monospace, monospace; font-size: 10px; color: {{ t.placeholderInk }}; background: {{ t.placeholderChip }}; padding: 3px 6px; border-radius: 4px;">hero image 1200×800</span>
+                  </div>
+                </div>
+
+                <div style="padding: 14px 20px 0;">
+                  <div style="font-family: {{ t.headFont }}; font-size: 21px; font-weight: 600; letter-spacing: -0.02em; color: {{ t.ink }}; line-height: 1.2;">Kitchen’s open until 10</div>
+                  <div style="font-size: 12.5px; color: {{ t.muted }}; margin-top: 4px;">Pickup in ~18 min · 214 Kestrel Ave</div>
+                  <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <span style="flex: 1; text-align: center; padding: 11px 0; font-size: 13px; font-weight: 600; background: {{ btn.bg }}; color: {{ btn.fg }}; border: 1px solid {{ btn.border }}; border-radius: {{ t.radius }};">Order pickup</span>
+                    <span style="padding: 11px 14px; font-size: 13px; font-weight: 500; color: {{ t.ink }}; border: 1px solid {{ t.hair }}; border-radius: {{ t.radius }};">Delivery</span>
+                  </div>
+                </div>
+
+                <div style="padding: 18px 20px 0;">
+                  <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                    <span style="font-family: {{ t.headFont }}; font-size: 14px; font-weight: 600; color: {{ t.ink }};">Popular this week</span>
+                    <span style="font-size: 12px; font-weight: 500; color: {{ t.secondary }};">See menu</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 11px;">
+                    <sc-for list="{{ popular }}" as="i" hint-placeholder-count="2">
+                      <div style="display: flex; gap: 11px; align-items: center;">
+                        <div style="width: 56px; height: 56px; flex: 0 0 56px; border-radius: {{ t.radius }}; background-color: {{ t.placeholder }}; background-image: repeating-linear-gradient(135deg, rgba(127,127,127,0.15) 0 5px, transparent 5px 10px);"></div>
+                        <div style="flex: 1; min-width: 0;">
+                          <div style="font-size: 13.5px; font-weight: 600; color: {{ t.ink }};">{{ i.name }}</div>
+                          <div style="font-size: 11.5px; color: {{ t.muted }}; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ i.desc }}</div>
+                        </div>
+                        <div style="font-size: 13px; font-weight: 600; color: {{ t.ink }};">{{ i.price }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- MENU -->
+            <sc-if value="{{ view.menu }}" hint-placeholder-val="{{ false }}">
+              <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="padding: 4px 20px 12px;">
+                  <div style="font-family: {{ t.headFont }}; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: {{ t.ink }};">Menu</div>
+                </div>
+                <div style="display: flex; gap: 7px; padding: 0 20px 14px; overflow: hidden;">
+                  <sc-for list="{{ categories }}" as="c" hint-placeholder-count="4">
+                    <span style="padding: 7px 12px; font-size: 12px; font-weight: 500; white-space: nowrap; background: {{ c.bg }}; color: {{ c.fg }}; border: 1px solid {{ c.border }}; border-radius: {{ t.pill }};">{{ c.name }}</span>
+                  </sc-for>
+                </div>
+                <div style="flex: 1; padding: 0 20px; display: flex; flex-direction: column;">
+                  <sc-for list="{{ menu }}" as="i" hint-placeholder-count="5">
+                    <div style="display: flex; gap: 12px; padding: 13px 0; border-top: 1px solid {{ t.hair }};">
+                      <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 7px;">
+                          <div style="font-size: 14px; font-weight: 600; color: {{ t.ink }};">{{ i.name }}</div>
+                          <sc-if value="{{ i.hasTag }}" hint-placeholder-val="{{ false }}">
+                            <span style="padding: 2px 6px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; background: {{ t.accentSoft }}; color: {{ t.accentTagInk }}; border-radius: 4px; white-space: nowrap;">{{ i.tag }}</span>
+                          </sc-if>
+                        </div>
+                        <div style="font-size: 11.5px; color: {{ t.muted }}; margin-top: 3px; line-height: 1.4;">{{ i.desc }}</div>
+                        <div style="font-size: 13px; font-weight: 600; color: {{ t.ink }}; margin-top: 6px;">{{ i.price }}</div>
+                      </div>
+                      <div style="width: 62px; height: 62px; flex: 0 0 62px; border-radius: {{ t.radius }}; background-color: {{ t.placeholder }}; background-image: repeating-linear-gradient(135deg, rgba(127,127,127,0.15) 0 5px, transparent 5px 10px);"></div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="padding: 12px 20px 16px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: {{ btn.bg }}; color: {{ btn.fg }}; border: 1px solid {{ btn.border }}; border-radius: {{ t.radius }};">
+                    <span style="font-size: 13px; font-weight: 600;">View order · 2 items</span>
+                    <span style="font-size: 13px; font-weight: 600;">$31.00</span>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- ITEM -->
+            <sc-if value="{{ view.item }}" hint-placeholder-val="{{ false }}">
+              <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="padding: 0 20px;">
+                  <div style="height: 232px; border-radius: {{ t.radius }}; background-color: {{ t.placeholder }}; background-image: repeating-linear-gradient(135deg, rgba(127,127,127,0.14) 0 6px, transparent 6px 12px); display: flex; align-items: flex-end; padding: 12px;">
+                    <span style="font-family: ui-monospace, monospace; font-size: 10px; color: {{ t.placeholderInk }}; background: {{ t.placeholderChip }}; padding: 3px 6px; border-radius: 4px;">dish photo 1000×1000</span>
+                  </div>
+                </div>
+                <div style="padding: 16px 20px 0;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: {{ t.secondary }};">Wood oven</span>
+                    <span style="width: 3px; height: 3px; border-radius: 50%; background: {{ t.hair }};"></span>
+                    <span style="display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: {{ t.accentTagInk }};"><span style="color: {{ t.accent }}; font-size: 12px;">★</span>4.8 · 212 orders</span>
+                  </div>
+                  <div style="font-family: {{ t.headFont }}; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; color: {{ t.ink }}; margin-top: 6px; line-height: 1.15;">Ash-Roasted Half Chicken</div>
+                  <div style="font-size: 13px; color: {{ t.muted }}; margin-top: 7px; line-height: 1.5;">Brined 24 hours, roasted over olive wood, finished with charred lemon and salsa verde. Served with grilled bread.</div>
+                  <div style="font-size: 17px; font-weight: 600; color: {{ t.ink }}; margin-top: 12px;">$26.00</div>
+                </div>
+                <div style="padding: 16px 20px 0;">
+                  <div style="font-size: 12px; font-weight: 600; color: {{ t.ink }}; margin-bottom: 9px;">Add a side</div>
+                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <sc-for list="{{ sides }}" as="s" hint-placeholder-count="2">
+                      <div style="display: flex; align-items: center; justify-content: space-between; padding: 11px 12px; border: 1px solid {{ s.border }}; background: {{ s.bg }}; border-radius: {{ t.radius }};">
+                        <span style="font-size: 13px; font-weight: 500; color: {{ t.ink }};">{{ s.name }}</span>
+                        <span style="font-size: 12.5px; color: {{ t.muted }};">{{ s.price }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="margin-top: auto; padding: 14px 20px 16px; display: flex; gap: 10px; align-items: center;">
+                  <div style="display: flex; align-items: center; gap: 14px; padding: 10px 12px; border: 1px solid {{ t.hair }}; border-radius: {{ t.radius }}; font-size: 14px; color: {{ t.ink }};">
+                    <span style="color: {{ t.muted }};">−</span><span style="font-weight: 600;">1</span><span>+</span>
+                  </div>
+                  <div style="flex: 1; text-align: center; padding: 13px 0; font-size: 13.5px; font-weight: 600; background: {{ btn.bg }}; color: {{ btn.fg }}; border: 1px solid {{ btn.border }}; border-radius: {{ t.radius }};">Add to order</div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- CHECKOUT -->
+            <sc-if value="{{ view.checkout }}" hint-placeholder-val="{{ false }}">
+              <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="padding: 4px 20px 14px;">
+                  <div style="font-family: {{ t.headFont }}; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: {{ t.ink }};">Checkout</div>
+                  <div style="font-size: 12.5px; color: {{ t.muted }}; margin-top: 4px;">Pickup · today at 7:20 PM</div>
+                </div>
+                <div style="padding: 0 20px;">
+                  <div style="padding: 14px; border: 1px solid {{ t.hair }}; border-radius: {{ t.radius }};">
+                    <sc-for list="{{ cart }}" as="c" hint-placeholder-count="2">
+                      <div style="display: flex; justify-content: space-between; gap: 10px; padding: 6px 0;">
+                        <span style="font-size: 13px; color: {{ t.ink }};">{{ c.qty }} × {{ c.name }}</span>
+                        <span style="font-size: 13px; font-weight: 500; color: {{ t.ink }};">{{ c.price }}</span>
+                      </div>
+                    </sc-for>
+                    <div style="height: 1px; background: {{ t.hair }}; margin: 10px 0;"></div>
+                    <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 12.5px; color: {{ t.muted }};"><span>Subtotal</span><span>$31.00</span></div>
+                    <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 12.5px; color: {{ t.muted }};"><span>Tax</span><span>$2.64</span></div>
+                    <div style="display: flex; justify-content: space-between; padding: 7px 0 0; font-size: 14px; font-weight: 600; color: {{ t.ink }};"><span>Total</span><span>$33.64</span></div>
+                  </div>
+                </div>
+                <div style="padding: 16px 20px 0;">
+                  <div style="font-size: 12px; font-weight: 600; color: {{ t.ink }}; margin-bottom: 9px;">Add a tip</div>
+                  <div style="display: flex; gap: 8px;">
+                    <sc-for list="{{ tips }}" as="p" hint-placeholder-count="4">
+                      <span style="flex: 1; text-align: center; padding: 10px 0; font-size: 12.5px; font-weight: 600; background: {{ p.bg }}; color: {{ p.fg }}; border: 1px solid {{ p.border }}; border-radius: {{ t.radius }};">{{ p.label }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="margin-top: auto; padding: 14px 20px 16px;">
+                  <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; margin-bottom: 12px; background: {{ t.accentSoft }}; border-radius: {{ t.radius }};">
+                    <span style="width: 16px; height: 16px; border-radius: 50%; background: {{ t.accent }};"></span>
+                    <span style="font-size: 12px; font-weight: 500; color: {{ t.accentTagInk }};">{{ loyalty }}</span>
+                  </div>
+                  <div style="text-align: center; padding: 13px 0; font-size: 13.5px; font-weight: 600; background: {{ btn.bg }}; color: {{ btn.fg }}; border: 1px solid {{ btn.border }}; border-radius: {{ t.radius }};">Pay $33.64</div>
+                  <div style="text-align: center; font-size: 11px; color: {{ t.muted }}; margin-top: 9px;">Card ending 4412 · {{ name }}</div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="flex: 0 0 62px; display: flex; align-items: center; padding: 0 8px 10px; border-top: 1px solid {{ t.hair }};">
+            <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="4">
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding-top: 9px;">
+                <span style="font-family: 'Material Symbols Rounded'; font-size: 21px; line-height: 1; color: {{ tb.color }}; font-variation-settings: 'FILL' {{ tb.fill }}, 'wght' 400, 'opsz' 24; -webkit-font-feature-settings: 'liga'; font-feature-settings: 'liga';">{{ tb.icon }}</span>
+                <span style="font-size: 9.5px; font-weight: 500; color: {{ tb.color }};">{{ tb.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px; font-size: 11.5px; color: #a3a3a8; font-family: ui-monospace, monospace;">{{ frameLabel }}</div>
+    </main>
+  </div>
+
+  <sc-if value="{{ publishOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(24,24,26,0.28); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; padding: 32px; z-index: 50;">
+      <div style="width: 760px; max-height: 100%; background: #ffffff; border: 1px solid #e4e4e0; border-radius: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 24px 60px rgba(0,0,0,0.14); display: flex; flex-direction: column; overflow: hidden;">
+
+        <div style="flex: 0 0 auto; padding: 20px 22px 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;">
+          <div>
+            <div style="font-size: 15px; font-weight: 600; letter-spacing: -0.015em;">Publish theme to {{ name }}</div>
+            <div style="font-size: 12.5px; color: #85858b; margin-top: 4px; line-height: 1.45;">Everyone using the app will see the new look within about a minute.</div>
+          </div>
+          <button onClick="{{ closePublish }}" style="flex: 0 0 auto; width: 28px; height: 28px; font: inherit; font-size: 14px; color: #85858b; background: none; border: 1px solid transparent; border-radius: 7px; cursor: pointer;" style-hover="background: #f4f4f3; color: #18181a;">✕</button>
+        </div>
+
+        <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 0 22px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-content: start;">
+          <sc-for list="{{ compare }}" as="c" hint-placeholder-count="2">
+            <div style="border: 1px solid #ededea; border-radius: 11px; overflow: hidden; background: #fbfbfa;">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid #ededea; background: #ffffff;">
+                <span style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: #3a3a40;">{{ c.label }}</span>
+                <span style="font-size: 10.5px; color: #a3a3a8; font-family: ui-monospace, monospace;">{{ c.note }}</span>
+              </div>
+              <div style="padding: 14px 14px 0; display: flex; justify-content: center;">
+                <div style="width: 100%; max-width: 268px; border: 1px solid {{ c.t.hair }}; border-top-left-radius: 14px; border-top-right-radius: 14px; border-bottom: none; background: {{ c.t.bg }}; font-family: {{ c.t.bodyFont }}; padding: 12px 12px 18px; opacity: {{ c.opacity }};">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 7px;">
+                      <span style="width: 22px; height: 22px; border-radius: {{ c.t.logoRadius }}; background: {{ c.t.primary }}; color: {{ c.t.onPrimary }}; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700;">{{ initials }}</span>
+                      <span style="font-family: {{ c.t.headFont }}; font-size: 12.5px; font-weight: 600; color: {{ c.t.ink }}; letter-spacing: -0.01em;">{{ c.nm }}</span>
+                    </div>
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: {{ c.t.accent }};"></span>
+                  </div>
+                  <div style="height: 76px; margin-top: 10px; border-radius: {{ c.t.radius }}; background-color: {{ c.t.placeholder }}; background-image: repeating-linear-gradient(135deg, rgba(127,127,127,0.14) 0 6px, transparent 6px 12px); position: relative;">
+                    <span style="position: absolute; top: 8px; left: 8px; padding: 3px 7px; font-size: 8.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; background: {{ c.t.accent }}; color: {{ c.t.accentInk }}; border-radius: {{ c.t.pill }};">2 for 1 pasta</span>
+                  </div>
+                  <div style="font-family: {{ c.t.headFont }}; font-size: 14px; font-weight: 600; letter-spacing: -0.015em; color: {{ c.t.ink }}; margin-top: 10px;">Kitchen’s open until 10</div>
+                  <div style="font-size: 10.5px; color: {{ c.t.muted }}; margin-top: 3px;">Pickup in ~18 min</div>
+                  <div style="display: flex; gap: 6px; margin-top: 10px;">
+                    <span style="flex: 1; text-align: center; padding: 8px 0; font-size: 10.5px; font-weight: 600; background: {{ c.t.btn.bg }}; color: {{ c.t.btn.fg }}; border: 1px solid {{ c.t.btn.border }}; border-radius: {{ c.t.radius }};">Order pickup</span>
+                    <span style="padding: 8px 10px; font-size: 10.5px; font-weight: 500; color: {{ c.t.ink }}; border: 1px solid {{ c.t.hair }}; border-radius: {{ c.t.radius }};">Delivery</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-top: 12px;">
+                    <span style="width: 30px; height: 30px; border-radius: {{ c.t.radius }}; background-color: {{ c.t.placeholder }}; background-image: repeating-linear-gradient(135deg, rgba(127,127,127,0.15) 0 5px, transparent 5px 10px);"></span>
+                    <span style="flex: 1; font-size: 10.5px; font-weight: 600; color: {{ c.t.ink }};">Ash-Roasted Half Chicken</span>
+                    <span style="font-size: 10.5px; font-weight: 600; color: {{ c.t.ink }};">$26.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="flex: 0 0 auto; border-top: 1px solid #ededea; padding: 16px 22px 18px;">
+          <div style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: #3a3a40;">{{ diffLabel }}</div>
+          <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;">
+            <sc-for list="{{ diff }}" as="d" hint-placeholder-count="6">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid #f4f4f3;">
+                <span style="font-size: 12.5px; color: #55555c;">{{ d.label }}</span>
+                <span style="display: flex; align-items: center; gap: 7px;">
+                  <sc-if value="{{ d.isColor }}" hint-placeholder-val="{{ true }}">
+                    <span style="display: flex; align-items: center; gap: 7px;">
+                      <span style="width: 13px; height: 13px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); background: {{ d.from }};"></span>
+                      <span style="font-size: 10.5px; color: #c9c9c6;">→</span>
+                      <span style="width: 13px; height: 13px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); background: {{ d.to }};"></span>
+                      <span style="font-size: 11px; color: #85858b; font-family: ui-monospace, monospace;">{{ d.toText }}</span>
+                    </span>
+                  </sc-if>
+                  <sc-if value="{{ d.notColor }}" hint-placeholder-val="{{ false }}">
+                    <span style="display: flex; align-items: center; gap: 7px; font-size: 12px;">
+                      <span style="color: #a3a3a8; text-decoration: line-through;">{{ d.fromText }}</span>
+                      <span style="font-size: 10.5px; color: #c9c9c6;">→</span>
+                      <span style="font-weight: 500; color: #18181a;">{{ d.toText }}</span>
+                    </span>
+                  </sc-if>
+                </span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="flex: 0 0 auto; border-top: 1px solid #ededea; background: #fbfbfa; padding: 13px 22px; display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 11.5px; color: #85858b;">You can roll back to v13 at any time.</span>
+          <div style="display: flex; align-items: center; gap: 9px;">
+            <button onClick="{{ closePublish }}" style="height: 31px; padding: 0 13px; font: inherit; font-size: 12.5px; font-weight: 500; color: #2a2a2e; background: #ffffff; border: 1px solid #e0e0dd; border-radius: 7px; cursor: pointer;" style-hover="background: #f4f4f3; border-color: #cfcfcb;">Keep editing</button>
+            <button onClick="{{ confirmPublish }}" style="height: 31px; padding: 0 14px; font: inherit; font-size: 12.5px; font-weight: 500; color: #ffffff; background: #18181a; border: 1px solid #18181a; border-radius: 7px; cursor: pointer; transition: background 120ms;" style-hover="background: #303036;" style-focus="box-shadow: 0 0 0 3px rgba(120,120,220,0.28);">Publish now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;businessName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Olive &amp; Ash Kitchen&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;defaultScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;menu&quot;,&quot;item&quot;,&quot;checkout&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showGuardrails&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
+const PAIRINGS = [
+  { id: 'modern',    name: 'Modern',    head: "Inter, sans-serif",             body: "Inter, sans-serif" },
+  { id: 'editorial', name: 'Editorial', head: "'Playfair Display', serif",     body: "Inter, sans-serif" },
+  { id: 'technical', name: 'Technical', head: "'Space Grotesk', sans-serif",   body: "'Space Grotesk', sans-serif" },
+  { id: 'classic',   name: 'Classic',   head: "'Libre Baskerville', serif",    body: "Inter, sans-serif" },
+  { id: 'bold',      name: 'Bold',      head: "Archivo, sans-serif",           body: "Inter, sans-serif" },
+  { id: 'refined',   name: 'Refined',   head: "'Instrument Serif', serif",     body: "Inter, sans-serif" },
+  { id: 'condensed', name: 'Condensed', head: "Oswald, sans-serif",            body: "Inter, sans-serif" },
+  { id: 'geometric', name: 'Geometric', head: "Sora, sans-serif",              body: "Sora, sans-serif" },
+  { id: 'friendly',  name: 'Friendly',  head: "'Bricolage Grotesque', sans-serif", body: "Inter, sans-serif" },
+  { id: 'grand',     name: 'Grand',     head: "'DM Serif Display', serif",      body: "Inter, sans-serif" },
+  { id: 'warm',      name: 'Warm',      head: "Lora, serif",                    body: "'Work Sans', sans-serif" },
+  { id: 'elegant',   name: 'Elegant',   head: "'Cormorant Garamond', serif",    body: "Inter, sans-serif" },
+  { id: 'marquee',   name: 'Marquee',   head: "'Bebas Neue', sans-serif",       body: "Inter, sans-serif" },
+  { id: 'crisp',     name: 'Crisp',     head: "'Plus Jakarta Sans', sans-serif",body: "'Plus Jakarta Sans', sans-serif" },
+  { id: 'neutral',   name: 'Neutral',   head: "'Work Sans', sans-serif",        body: "'Work Sans', sans-serif" },
+  { id: 'humanist',  name: 'Humanist',  head: "Manrope, sans-serif",            body: "Manrope, sans-serif" }
+];
+
+const RADII = [
+  { id: 'sharp',   name: 'Sharp',   px: 0,  pill: 0,   demo: '1px' },
+  { id: 'soft',    name: 'Soft',    px: 6,  pill: 8,   demo: '3px' },
+  { id: 'rounded', name: 'Rounded', px: 12, pill: 999, demo: '6px' },
+  { id: 'pill',    name: 'Pill',    px: 20, pill: 999, demo: '8px' }
+];
+
+const PRESETS = {
+  primary:   ['#E23D28', '#1C7C54', '#1F5FD0', '#7B3FA0', '#111114'],
+  secondary: ['#0F5A54', '#8A4B1F', '#243B6B', '#6B2B45', '#4A4A50'],
+  accent:    ['#F5C518', '#37C08A', '#FF7A45', '#8E86C4', '#BFC4C9'],
+  background:['#FFFFFF', '#FFFBF2', '#FAF8F4', '#F6F5F2', '#F3EFE7']
+};
+
+const LABELS = { primary: 'Primary', secondary: 'Secondary', accent: 'Accent', background: 'Background' };
+
+function hexToRgb(h) {
+  const s = String(h || '').replace('#', '');
+  const f = s.length === 3 ? s.split('').map(c => c + c).join('') : s;
+  return [0, 2, 4].map(i => parseInt(f.slice(i, i + 2), 16) || 0);
+}
+function lum(hex) {
+  const c = hexToRgb(hex).map(v => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+function ratio(a, b) {
+  const l1 = lum(a), l2 = lum(b);
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+function readable(bg) { return ratio(bg, '#ffffff') >= 3.6 ? '#ffffff' : '#1a1a1c'; }
+function mix(hex, target, amt) {
+  const a = hexToRgb(hex), b = hexToRgb(target);
+  return '#' + a.map((v, i) => Math.round(v + (b[i] - v) * amt).toString(16).padStart(2, '0')).join('');
+}
+function darkenUntil(hex, bg, target) {
+  let out = hex;
+  for (let i = 0; i < 24 && ratio(out, bg) < target; i++) out = mix(out, '#000000', 0.08);
+  return out;
+}
+function lightenUntil(hex, bg, target) {
+  let out = hex;
+  for (let i = 0; i < 24 && ratio(out, bg) < target; i++) out = mix(out, '#ffffff', 0.08);
+  return out;
+}
+
+const LIVE = {
+  primary: '#2A4A7B', secondary: '#4A4A50', accent: '#C9CDD2', background: '#FFFFFF',
+  pairing: 'modern', radius: 'sharp', button: 'outline'
+};
+
+const DEFAULTS = {
+  primary: '#E23D28', secondary: '#0F5A54', accent: '#F5C518', background: '#FFFFFF',
+  pairing: 'editorial', radius: 'rounded', button: 'filled'
+};
+
+class Component extends DCLogic {
+  state = {
+    theme: Object.assign({}, DEFAULTS),
+    name: null,
+    logoUrl: null,
+    screen: null,
+    open: { brand: true, color: true, type: true, shape: true, button: true },
+    changes: 6,
+    mode: 'light',
+    typeOpen: false,
+    sample: 'Ash-Roasted Half Chicken',
+    publishOpen: false,
+    published: false
+  };
+
+  derive(th) {
+    const pair = PAIRINGS.find(p => p.id === th.pairing) || PAIRINGS[0];
+    const rad = RADII.find(r => r.id === th.radius) || RADII[1];
+    const ink = ratio(th.background, '#141416') >= 4.5 ? '#141416' : '#ffffff';
+    const tint = mix(th.primary, th.background, 0.88);
+    const btn =
+      th.button === 'outline' ? { bg: 'transparent', fg: th.primary, border: th.primary } :
+      th.button === 'soft'    ? { bg: tint, fg: darkenUntil(th.primary, tint, 4.5), border: 'transparent' } :
+                                { bg: th.primary, fg: readable(th.primary), border: th.primary };
+    return {
+      primary: th.primary, secondary: th.secondary, accent: th.accent, bg: th.background,
+      ink, muted: mix(ink, th.background, 0.42), hair: mix(ink, th.background, 0.86), tint,
+      radius: rad.px + 'px', pill: rad.pill + 'px', logoRadius: Math.min(rad.px, 10) + 'px',
+      headFont: pair.head, bodyFont: pair.body,
+      accentInk: readable(th.accent),
+      accentSoft: mix(th.accent, th.background, 0.85),
+      accentTagInk: darkenUntil(th.accent, mix(th.accent, th.background, 0.85), 4.5),
+      placeholder: '#e9e6e2', placeholderInk: '#8b8681', placeholderChip: 'rgba(255,255,255,0.8)',
+      onPrimary: readable(th.primary), btn, pairName: pair.name, radName: rad.name,
+      btnName: th.button.charAt(0).toUpperCase() + th.button.slice(1)
+    };
+  }
+
+  set(k, v) { this.setState(s => ({ theme: Object.assign({}, s.theme, { [k]: v }), changes: s.changes + 1 })); }
+  toggleSection(k) { this.setState(s => ({ open: Object.assign({}, s.open, { [k]: !s.open[k] }) })); }
+
+  pickLogo = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      const f = input.files && input.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = () => this.setState(s => ({ logoUrl: r.result, changes: s.changes + 1 }));
+      r.readAsDataURL(f);
+    };
+    input.click();
+  };
+
+  renderVals() {
+    const th = this.state.theme;
+    const name = this.state.name ?? (this.props.businessName || 'Olive & Ash Kitchen');
+    const screen = this.state.screen ?? (this.props.defaultScreen || 'home');
+    const pair = PAIRINGS.find(p => p.id === th.pairing) || PAIRINGS[0];
+    const rad = RADII.find(r => r.id === th.radius) || RADII[1];
+    const R = rad.px + 'px';
+    const dark = this.state.mode === 'dark';
+
+    const surface = dark ? mix('#131316', th.primary, 0.06) : th.background;
+    const primary = dark ? lightenUntil(th.primary, surface, 3.4) : th.primary;
+    const secondary = dark ? lightenUntil(th.secondary, surface, 4.2) : th.secondary;
+    const accentC = dark ? lightenUntil(th.accent, surface, 3.4) : th.accent;
+    const ink = ratio(surface, '#141416') >= 4.5 ? '#141416' : '#ffffff';
+    const muted = mix(ink, surface, 0.42);
+    const hair = mix(ink, surface, dark ? 0.78 : 0.86);
+    const tint = mix(primary, surface, dark ? 0.82 : 0.88);
+
+    const softInk = dark ? lightenUntil(primary, tint, 4.2) : darkenUntil(primary, tint, 4.5);
+    const btn =
+      th.button === 'outline' ? { bg: 'transparent', fg: primary, border: primary } :
+      th.button === 'soft'    ? { bg: tint, fg: softInk, border: 'transparent' } :
+                                { bg: primary, fg: readable(primary), border: primary };
+
+    const guard = this.props.showGuardrails ?? true;
+    const accentRatio = ratio(accentC, surface);
+    const primaryRatio = ratio(primary, surface);
+    let warn = { show: false };
+    if (guard && accentRatio < 3) {
+      warn = {
+        show: true,
+        title: 'Accent on background: ' + accentRatio.toFixed(1) + ':1' + (dark ? ' (dark mode)' : ''),
+        body: 'Prices and labels in this color will be hard to read. Needs at least 3:1.',
+        fix: () => this.set('accent', darkenUntil(th.accent, th.background, 3.2))
+      };
+    } else if (guard && primaryRatio < 3) {
+      warn = {
+        show: true,
+        title: 'Primary on background: ' + primaryRatio.toFixed(1) + ':1',
+        body: 'Buttons in this color will blend into the page. Needs at least 3:1.',
+        fix: () => this.set('primary', darkenUntil(th.primary, th.background, 3.2))
+      };
+    }
+
+    const caretOf = k => (this.state.open[k] ? '▾' : '▸');
+
+    return {
+      name, initials: name.trim().charAt(0).toUpperCase() || 'A',
+      changeLabel: this.state.changes === 1 ? '1 change' : this.state.changes + ' changes',
+      hasLogo: !!this.state.logoUrl, noLogo: !this.state.logoUrl, logoEl: this.state.logoUrl ? React.createElement('img', { src: this.state.logoUrl, alt: 'Logo', style: { maxWidth: '100%', maxHeight: '100%', display: 'block' } }) : null,
+      pickLogo: this.pickLogo,
+      clearLogo: () => this.setState({ logoUrl: null }),
+      setName: e => this.setState({ name: e.target.value }),
+      openPublish: () => this.setState({ publishOpen: true }),
+      closePublish: () => this.setState({ publishOpen: false }),
+      confirmPublish: () => this.setState({ publishOpen: false, published: true, changes: 0 }),
+      publishOpen: this.state.publishOpen,
+      compare: [
+        { key: 'live', label: 'Live now', note: 'Published Jun 2 · v13', opacity: 0.78, t: this.derive(LIVE), nm: 'Olive & Ash' },
+        { key: 'new', label: 'New theme', note: 'Draft · v14', opacity: 1, t: this.derive(th), nm: name }
+      ],
+      diffLabel: (() => {
+        let n = 0;
+        ['primary', 'secondary', 'accent', 'background'].forEach(k => { if (String(th[k]).toLowerCase() !== String(LIVE[k]).toLowerCase()) n++; });
+        if (th.pairing !== LIVE.pairing) n++;
+        if (th.radius !== LIVE.radius) n++;
+        if (th.button !== LIVE.button) n++;
+        if (this.state.logoUrl) n++;
+        return n === 1 ? '1 change' : n + ' changes';
+      })(),
+      diff: (() => {
+        const d = this.derive(th), l = this.derive(LIVE);
+        const rows = [];
+        ['primary', 'secondary', 'accent', 'background'].forEach(k => {
+          if (String(th[k]).toLowerCase() !== String(LIVE[k]).toLowerCase())
+            rows.push({ label: LABELS[k] + ' color', isColor: true, notColor: false, from: LIVE[k], to: th[k], fromText: LIVE[k].toUpperCase(), toText: String(th[k]).toUpperCase() });
+        });
+        if (th.pairing !== LIVE.pairing) rows.push({ label: 'Typography', isColor: false, notColor: true, fromText: l.pairName, toText: d.pairName, from: '#ffffff', to: '#ffffff' });
+        if (th.radius !== LIVE.radius) rows.push({ label: 'Corner radius', isColor: false, notColor: true, fromText: l.radName, toText: d.radName, from: '#ffffff', to: '#ffffff' });
+        if (th.button !== LIVE.button) rows.push({ label: 'Button style', isColor: false, notColor: true, fromText: l.btnName, toText: d.btnName, from: '#ffffff', to: '#ffffff' });
+        if (this.state.logoUrl) rows.push({ label: 'Logo', isColor: false, notColor: true, fromText: 'None', toText: 'Uploaded', from: '#ffffff', to: '#ffffff' });
+        return rows;
+      })(),
+      reset: () => this.setState({ theme: Object.assign({}, DEFAULTS), logoUrl: null, changes: 0, name: null }),
+
+      statusDot: this.state.published ? '#3f7d5c' : '#a8a29a',
+      statusText: this.state.published ? 'Live · v14' : 'Draft · ' + (this.state.changes === 1 ? '1 change' : this.state.changes + ' changes'),
+      open: this.state.open,
+      caret: { brand: caretOf('brand'), color: caretOf('color'), type: caretOf('type'), shape: caretOf('shape'), button: caretOf('button') },
+      toggle: {
+        brand: () => this.toggleSection('brand'), color: () => this.toggleSection('color'),
+        type: () => this.toggleSection('type'), shape: () => this.toggleSection('shape'),
+        button: () => this.toggleSection('button')
+      },
+
+      colorRows: ['primary', 'secondary', 'accent', 'background'].map(k => ({
+        key: k, label: LABELS[k], value: th[k],
+        onInput: e => this.set(k, e.target.value),
+        presets: PRESETS[k].map(hex => ({
+          hex,
+          ring: hex.toLowerCase() === String(th[k]).toLowerCase() ? '0 0 0 2px #ffffff, 0 0 0 3.5px #18181a' : 'none',
+          onClick: () => this.set(k, hex)
+        }))
+      })),
+
+      warn,
+
+      pairings: PAIRINGS.map(p => ({
+        name: p.name, head: p.head, body: p.body,
+        headName: p.head.replace(/'|, serif|, sans-serif/g, ''),
+        stack: p.body === p.head ? 'Headings and body' : 'Body: ' + p.body.replace(/'|, serif|, sans-serif/g, ''),
+        bg: p.id === th.pairing ? '#f7f7f6' : 'transparent',
+        checkColor: p.id === th.pairing ? '#18181a' : 'transparent',
+        onClick: () => this.setState({ typeOpen: false }, () => this.set('pairing', p.id))
+      })),
+      current: { name: pair.name, head: pair.head, body: pair.body, headName: pair.head.replace(/'|, serif|, sans-serif/g, ''), bodyName: pair.body.replace(/'|, serif|, sans-serif/g, '') },
+      typeOpen: this.state.typeOpen,
+      typeCaret: this.state.typeOpen ? '▴' : '▾',
+      typeMenuBorder: this.state.typeOpen ? '#8b8bd6' : '#e0e0dd',
+      toggleTypeMenu: () => this.setState(s => ({ typeOpen: !s.typeOpen })),
+      sample: this.state.sample,
+      sampleText: this.state.sample.trim() || 'Ash-Roasted Half Chicken',
+      sampleShort: (this.state.sample.trim() || 'Ash-Roasted Half Chicken').slice(0, 28),
+      setSample: e => this.setState({ sample: e.target.value }),
+
+      radii: RADII.map(r => ({
+        name: r.name, demo: r.demo,
+        bg: r.id === th.radius ? '#ffffff' : 'transparent',
+        border: r.id === th.radius ? '#dcdcd8' : 'transparent',
+        color: r.id === th.radius ? '#18181a' : '#85858b',
+        onClick: () => this.set('radius', r.id)
+      })),
+
+      buttonStyles: [
+        { id: 'filled', name: 'Filled', bg: primary, fg: readable(primary), border: primary },
+        { id: 'outline', name: 'Outline', bg: 'transparent', fg: primary, border: primary },
+        { id: 'soft', name: 'Soft', bg: tint, fg: softInk, border: 'transparent' }
+      ].map(b => Object.assign({}, b, {
+        radius: R,
+        cardBg: b.id === th.button ? '#fbfbfa' : '#ffffff',
+        cardBorder: b.id === th.button ? '#18181a' : '#eaeae7',
+        onClick: () => this.set('button', b.id)
+      })),
+
+      screens: [
+        { id: 'home', name: 'Home' }, { id: 'menu', name: 'Menu' },
+        { id: 'item', name: 'Item Detail' }, { id: 'checkout', name: 'Checkout' }
+      ].map(s => ({
+        name: s.name,
+        bg: s.id === screen ? '#f2f2f0' : 'transparent',
+        color: s.id === screen ? '#18181a' : '#75757c',
+        onClick: () => this.setState({ screen: s.id })
+      })),
+      view: { home: screen === 'home', menu: screen === 'menu', item: screen === 'item', checkout: screen === 'checkout' },
+
+      t: {
+        primary: primary, secondary: secondary, accent: accentC, bg: surface,
+        onPrimary: readable(primary), ink, muted, hair, tint,
+        radius: R, pill: rad.pill + 'px', logoRadius: Math.min(rad.px, 10) + 'px',
+        headFont: pair.head, bodyFont: pair.body,
+        accentInk: readable(accentC),
+        accentSoft: mix(accentC, surface, dark ? 0.8 : 0.85),
+        accentTagInk: dark ? lightenUntil(accentC, mix(accentC, surface, 0.8), 4.2) : darkenUntil(accentC, mix(accentC, surface, 0.85), 4.5),
+        placeholder: dark ? '#2b2b30' : '#e9e6e2',
+        placeholderInk: dark ? '#6f6f78' : '#8b8681',
+        placeholderChip: dark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.8)'
+      },
+      btn,
+      mode: this.state.mode,
+      modes: [
+        { id: 'light', name: 'Light', icon: 'light_mode' }, { id: 'dark', name: 'Dark', icon: 'dark_mode' }
+      ].map(m => ({
+        name: m.name, icon: m.icon,
+        bg: m.id === this.state.mode ? '#f2f2f0' : 'transparent',
+        color: m.id === this.state.mode ? '#18181a' : '#75757c',
+        onClick: () => this.setState({ mode: m.id })
+      })),
+      frameLabel: dark ? 'iPhone 15 · 393 × 852 · dark' : 'iPhone 15 · 393 × 852 · light',
+
+      popular: [
+        { name: 'Ash-Roasted Half Chicken', desc: 'Charred lemon, salsa verde', price: '$26.00' },
+        { name: 'Bucatini Cacio e Pepe', desc: 'Tellicherry pepper, pecorino', price: '$21.00' }
+      ],
+      loyalty: 'Earn 34 points with this order',
+      categories: [
+        { id: 'small', name: 'Small plates' }, { id: 'wood', name: 'Wood oven' },
+        { id: 'pasta', name: 'Pasta' }, { id: 'sweets', name: 'Sweets' }
+      ].map((c, i) => ({
+        name: c.name,
+        bg: i === 1 ? primary : 'transparent',
+        fg: i === 1 ? readable(primary) : muted,
+        border: i === 1 ? primary : hair
+      })),
+      menu: [
+        { name: 'Ash-Roasted Half Chicken', desc: 'Olive wood, charred lemon, salsa verde', price: '$26.00', tag: "Chef’s pick", hasTag: true },
+        { name: 'Blistered Padrón Peppers', desc: 'Sea salt, lemon oil', price: '$9.00', hasTag: false },
+        { name: 'Bucatini Cacio e Pepe', desc: 'Tellicherry pepper, aged pecorino', price: '$21.00', hasTag: false },
+        { name: 'Little Gem Caesar', desc: 'White anchovy, rye crumb', price: '$13.00', hasTag: false },
+        { name: 'Olive Oil Cake', desc: 'Crème fraîche, roasted plum', price: '$10.00', tag: 'New', hasTag: true }
+      ],
+      sides: [
+        { name: 'Grilled bread & butter', price: '+$4.00' },
+        { name: 'Charred broccolini', price: '+$7.00' }
+      ].map((s, i) => ({ name: s.name, price: s.price, bg: i === 0 ? tint : 'transparent', border: i === 0 ? primary : hair })),
+      cart: [
+        { qty: 1, name: 'Ash-Roasted Half Chicken', price: '$26.00' },
+        { qty: 1, name: 'Grilled bread & butter', price: '$5.00' }
+      ],
+      tips: [
+        { id: '0', label: 'None' }, { id: '15', label: '15%' }, { id: '18', label: '18%' }, { id: '20', label: '20%' }
+      ].map(p => ({
+        label: p.label,
+        bg: p.id === '18' ? tint : 'transparent',
+        fg: p.id === '18' ? softInk : muted,
+        border: p.id === '18' ? primary : hair
+      })),
+      tabs: [
+        { id: 'home', name: 'Home', icon: 'home' },
+        { id: 'menu', name: 'Menu', icon: 'restaurant_menu' },
+        { id: 'orders', name: 'Orders', icon: 'receipt_long' },
+        { id: 'account', name: 'Account', icon: 'person' }
+      ].map(tb => {
+        const active = tb.id === screen || (screen === 'item' && tb.id === 'menu') || (screen === 'checkout' && tb.id === 'orders');
+        return { name: tb.name, icon: tb.icon, fill: active ? 1 : 0, color: active ? primary : muted };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>
