@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { EditorPage } from './features/editor/EditorPage.jsx';
+import { App } from './App.jsx';
 import { ToastProvider } from './lib/toast.jsx';
 import './styles/chrome.css';
 
@@ -23,7 +23,7 @@ createRoot(container).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <EditorPage />
+        <App />
       </ToastProvider>
     </QueryClientProvider>
   </StrictMode>,

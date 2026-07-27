@@ -19,7 +19,13 @@ import { useAutosave, useUndoRedoShortcuts } from './useAutosave.js';
 
 type SectionKey = 'brand' | 'color' | 'typography' | 'shape' | 'buttons';
 
-export function EditorPage() {
+export function EditorPage({
+  tenantId,
+  onBack,
+}: {
+  tenantId: string;
+  onBack: () => void;
+}) {
   const [publishOpen, setPublishOpen] = useState(false);
   const [screen, setScreen] = useState<PreviewScreen>('home');
   const [scheme, setScheme] = useState<ColorScheme>('light');
@@ -44,13 +50,11 @@ export function EditorPage() {
   useAutosave();
   useUndoRedoShortcuts();
 
-  // Picks the first brand the user can edit. The brand list (step 8) will
-  // replace this with a real route parameter.
   const bootstrap = useQuery({
-    queryKey: ['bootstrap'],
+    queryKey: ['bootstrap', tenantId],
     queryFn: async () => {
       const { tenants } = await api.tenants.list();
-      const first = tenants[0];
+      const first = tenants.find((t) => t.id === tenantId);
       if (!first) return null;
 
       const draft = await api.theme.getDraft(first.id);
@@ -117,14 +121,15 @@ export function EditorPage() {
       setPublishOpen(false);
       push({ tone: 'neutral', message: `Published v${result.version.version}. Live shortly.` });
       // The live theme moved, so the draft's diff and the brand list are stale.
-      await queryClient.invalidateQueries({ queryKey: ['bootstrap'] });
+      await queryClient.invalidateQueries({ queryKey: ['bootstrap', tenantId] });
+      await queryClient.invalidateQueries({ queryKey: ['tenants'] });
     },
     onError: (error) => {
       // The server's verdict wins. It re-ran the same contrast check against
       // the stored draft, so a rejection here means the client was out of date.
       useDraftStore.setState({ saveState: 'dirty' });
       if (error instanceof ApiError && error.code === 'contrast_blocked') {
-        void queryClient.invalidateQueries({ queryKey: ['bootstrap'] });
+        void queryClient.invalidateQueries({ queryKey: ['bootstrap', tenantId] });
       }
     },
   });
@@ -132,11 +137,13 @@ export function EditorPage() {
   const toggle = (key: SectionKey) =>
     setOpenSections((current) => ({ ...current, [key]: !current[key] }));
 
-  if (bootstrap.isPending) return <BootScreen state="loading" />;
+  if (bootstrap.isPending) return <BootScreen state="loading" onBack={onBack} />;
   if (bootstrap.isError) {
-    return <BootScreen state="error" detail={(bootstrap.error as Error).message} />;
+    return (
+      <BootScreen state="error" detail={(bootstrap.error as Error).message} onBack={onBack} />
+    );
   }
-  if (!bootstrap.data || !tokens) return <BootScreen state="empty" />;
+  if (!bootstrap.data || !tokens) return <BootScreen state="missing" onBack={onBack} />;
 
   const { tenant } = bootstrap.data;
 
@@ -148,6 +155,7 @@ export function EditorPage() {
         changeCount={changeSummary.count}
         liveVersion={liveVersion}
         publishBlockedReason={publishBlockedReason}
+        onBack={onBack}
         onPublish={() => setPublishOpen(true)}
         onRetrySave={() => apply({ ...tokens })}
       />
@@ -243,16 +251,24 @@ export function EditorPage() {
   );
 }
 
-function BootScreen({ state, detail }: { state: 'loading' | 'error' | 'empty'; detail?: string }) {
+function BootScreen({
+  state,
+  detail,
+  onBack,
+}: {
+  state: 'loading' | 'error' | 'missing';
+  detail?: string;
+  onBack: () => void;
+}) {
   const content = {
     loading: { title: 'Loading your brand…', body: null },
     error: {
-      title: 'Could not load your brands',
+      title: 'Could not load this brand',
       body: detail ?? 'Check that the API is running on port 4000.',
     },
-    empty: {
-      title: 'No brands yet',
-      body: 'Add a business to give it a branded app. Setup takes about five minutes — logo, colours, and a font, then publish.',
+    missing: {
+      title: 'That brand is not available',
+      body: 'It may have been removed, or you may not have access to it.',
     },
   }[state];
 
@@ -269,6 +285,15 @@ function BootScreen({ state, detail }: { state: 'loading' | 'error' | 'empty'; d
         <div className="text-14-5 font-semibold tracking-[-0.015em]">{content.title}</div>
         {content.body ? (
           <div className="text-12-5 leading-[1.5] text-ink-helper">{content.body}</div>
+        ) : null}
+        {state !== 'loading' ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="focus-ring mt-3 rounded-4 text-12-5 font-medium text-ink-body underline underline-offset-2 hover:text-ink"
+          >
+            Back to brands
+          </button>
         ) : null}
       </div>
     </div>

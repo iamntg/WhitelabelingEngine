@@ -48,6 +48,7 @@ export function Header({
   changeCount,
   liveVersion,
   publishBlockedReason,
+  onBack,
   onPublish,
   onRetrySave,
 }: {
@@ -57,6 +58,7 @@ export function Header({
   liveVersion: number | null;
   /** Non-null disables publish and explains why, per the spec. */
   publishBlockedReason: string | null;
+  onBack: () => void;
   onPublish: () => void;
   onRetrySave: () => void;
 }) {
@@ -71,9 +73,13 @@ export function Header({
         </div>
         <div className="h-5 w-px bg-hairline" aria-hidden="true" />
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-13">
-          <a href="/" className="focus-ring rounded-4 text-ink-muted transition-colors hover:text-ink">
+          <button
+            type="button"
+            onClick={onBack}
+            className="focus-ring rounded-4 text-ink-muted transition-colors hover:text-ink"
+          >
             Brands
-          </a>
+          </button>
           <span className="text-ink-chevron" aria-hidden="true">
             /
           </span>
