@@ -40,6 +40,18 @@ brands, and the web app authenticates locally as that user.
 Point `DATABASE_URL` in `apps/api/.env` at any Postgres 14+ instance and skip
 step 2.
 
+### The mobile scaffold
+
+```bash
+cp apps/mobile/.env.example apps/mobile/.env
+pnpm --filter @wl/mobile start
+```
+
+It fetches the published theme for `EXPO_PUBLIC_TENANT_SLUG`, caches it in
+AsyncStorage, applies `resolveTheme()` and renders one themed screen. On a
+physical device `localhost` is the device itself — use your machine's LAN
+address.
+
 ## Layout
 
 ```
@@ -148,6 +160,8 @@ enforces this by measuring the chroma of every declared token.
 
 ## Status
 
+All nine build steps are complete.
+
 | Step | State |
 | --- | --- |
 | 1. `packages/theme` + tests | Done |
@@ -155,7 +169,26 @@ enforces this by measuring the chroma of every declared token.
 | 3. Fastify API, auth, OpenAPI | Done |
 | 4. `packages/api-client` | Done |
 | 5. Web shell, header, left panel | Done |
-| 6. Phone preview, 4 screens | Next |
-| 7. Publish modal with before/after | Pending |
-| 8. Brand list + empty state | Pending |
-| 9. Expo scaffold | Pending |
+| 6. Phone preview, 4 screens | Done |
+| 7. Publish modal with before/after | Done |
+| 8. Brand list + empty state | Done |
+| 9. Expo scaffold | Done |
+
+### Not built yet
+
+Deliberately out of scope so far, and worth naming rather than discovering:
+
+- **Auth.** Supabase JWT verification is wired in the API, but there is no login
+  screen. Local development uses `Bearer dev:<userId>`, which the API refuses in
+  production.
+- **Logo upload.** The signed-URL endpoint exists; the editor still uses a local
+  `FileReader` data URL, so a logo is not yet persisted to storage.
+- **New brand flow.** `POST /v1/tenants` works; the button does not open a form.
+- **Version history UI.** The endpoints and rollback logic are done and tested;
+  there is no screen for them.
+- **The header "Preview" button** is unwired — see the open question about what
+  it should do.
+- **The mobile app has never run on a device or simulator.** The scaffold
+  typechecks, its font bundle is asserted against the registry, and its exact
+  fetch-and-resolve path is verified from Node against the live API, but no
+  Metro bundle has been built.

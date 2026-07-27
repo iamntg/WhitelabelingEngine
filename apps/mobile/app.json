@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Counter",
+    "slug": "counter-whitelabel",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": false,
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.counter.whitelabel"
+    },
+    "android": {
+      "package": "com.counter.whitelabel"
+    },
+    "extra": {
+      "apiBaseUrl": "http://localhost:4000",
+      "tenantSlug": "olive-ash-kitchen"
+    }
+  }
+}
