@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import type { ColorScheme } from '@wl/theme';
 import { defaultTokens, diffTokens, validateForPublish, type ThemeTokens } from '@wl/theme';
 import { useMemo, useState } from 'react';
 import { PanelSection } from '../../components/chrome.js';
@@ -10,11 +11,14 @@ import { ButtonsSection } from './sections/ButtonsSection.jsx';
 import { ColorSection } from './sections/ColorSection.jsx';
 import { ShapeSection } from './sections/ShapeSection.jsx';
 import { TypographySection } from './sections/TypographySection.jsx';
+import { PreviewCanvas, type PreviewScreen } from '../preview/PreviewCanvas.jsx';
 import { useAutosave, useUndoRedoShortcuts } from './useAutosave.js';
 
 type SectionKey = 'brand' | 'color' | 'typography' | 'shape' | 'buttons';
 
 export function EditorPage() {
+  const [screen, setScreen] = useState<PreviewScreen>('home');
+  const [scheme, setScheme] = useState<ColorScheme>('light');
   const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
     brand: true,
     color: true,
@@ -52,6 +56,17 @@ export function EditorPage() {
       return { tenant: first, draft };
     },
     retry: 1,
+  });
+
+  const slug = bootstrap.data?.tenant.slug ?? null;
+
+  // Preview content comes from the same public endpoint the phone calls, so the
+  // editor cannot preview against data the app would never receive.
+  const previewContent = useQuery({
+    queryKey: ['preview-content', slug],
+    queryFn: async () => (slug ? (await api.public.content(slug)).data.content : null),
+    enabled: slug !== null,
+    staleTime: Infinity,
   });
 
   const validation = useMemo(() => (tokens ? validateForPublish(tokens) : null), [tokens]);
@@ -153,30 +168,15 @@ export function EditorPage() {
         </aside>
 
         <main className="relative flex min-w-0 flex-1 flex-col items-center overflow-y-auto bg-canvas px-6 pt-[22px] pb-10">
-          <PreviewPlaceholder />
+          <PreviewCanvas
+            tokens={tokens}
+            content={previewContent.data ?? null}
+            screen={screen}
+            onScreenChange={setScreen}
+            scheme={scheme}
+            onSchemeChange={setScheme}
+          />
         </main>
-      </div>
-    </div>
-  );
-}
-
-/**
- * The phone preview is step 6. This placeholder occupies the canvas so the
- * shell's proportions are honest, and is deliberately obvious rather than a
- * half-built mock that might be mistaken for the real thing.
- */
-function PreviewPlaceholder() {
-  return (
-    <div className="mt-6 rounded-[46px] bg-bezel p-[9px] shadow-phone">
-      <div className="flex h-[764px] w-[372px] flex-col items-center justify-center gap-2 rounded-[38px] bg-surface px-10 text-center">
-        <span className="font-mono text-11 text-ink-hint">step 6</span>
-        <span className="text-13-5 font-semibold tracking-[-0.01em] text-ink-heading">
-          Phone preview
-        </span>
-        <span className="text-12 leading-[1.5] text-ink-helper">
-          Renders through resolveTheme() from packages/theme, in an isolated frame, across Home,
-          Menu, Item Detail and Checkout.
-        </span>
       </div>
     </div>
   );
