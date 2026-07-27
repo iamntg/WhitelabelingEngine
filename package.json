@@ -7,10 +7,16 @@
     "node": ">=20"
   },
   "scripts": {
+    "dev": "pnpm build && pnpm --parallel --filter \"./packages/*\" --filter @wl/api --filter @wl/web dev",
+    "dev:api": "pnpm --filter @wl/api dev",
+    "dev:web": "pnpm --filter @wl/web dev",
+    "setup": "docker compose up -d && pnpm build && pnpm --filter @wl/api db:migrate && pnpm --filter @wl/api db:seed",
     "build": "pnpm -r --filter './packages/*' build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "db:reset": "pnpm --filter @wl/api db:reset",
+    "openapi": "pnpm --filter @wl/api openapi"
   },
   "devDependencies": {
     "typescript": "^5.7.2"

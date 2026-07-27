@@ -21,17 +21,16 @@ is what makes running it in all three places possible.
 Requires Node 20+, pnpm 10+, and Docker (for local Postgres).
 
 ```bash
-pnpm install                                   # 1
-docker compose up -d                           # 2  Postgres on :5433
-cp apps/api/.env.example apps/api/.env         # 3
-cp apps/web/.env.example apps/web/.env         # 4
-pnpm --filter @wl/theme build                  # 5
-pnpm --filter @wl/api-client build             # 6
-pnpm --filter @wl/api db:migrate               # 7
-pnpm --filter @wl/api db:seed                  # 8  three demo brands
-pnpm --filter @wl/api dev                      # 9  API on :4000
-pnpm --filter @wl/web dev                      # 10 admin app on :5173
+pnpm install                              # 1
+cp apps/api/.env.example apps/api/.env    # 2
+cp apps/web/.env.example apps/web/.env    # 3
+pnpm setup                                # 4  Postgres, build, migrate, seed
+pnpm dev                                  # 5  API :4000 + admin app :5173
 ```
+
+`pnpm dev` runs four watchers in parallel — both shared packages rebuild on
+change, so editing `packages/theme` reaches the web app without a manual build.
+Ports 4000 and 5173 must be free.
 
 Open <http://localhost:5173>. The seed grants `demo-user` access to all three
 brands, and the web app authenticates locally as that user.
@@ -62,11 +61,13 @@ two to drift.
 
 | Command | Does |
 | --- | --- |
+| `pnpm dev` | Everything, one command |
+| `pnpm setup` | Postgres + build + migrate + seed |
 | `pnpm test` | All tests across every package |
 | `pnpm typecheck` | Strict TypeScript, no `any` |
 | `pnpm build` | Build the shared packages |
-| `pnpm --filter @wl/api openapi` | Write `apps/api/openapi.json` |
-| `pnpm --filter @wl/api db:reset` | Drop, migrate and re-seed |
+| `pnpm openapi` | Write `apps/api/openapi.json` |
+| `pnpm db:reset` | Drop, migrate and re-seed |
 
 ## How theming works
 
