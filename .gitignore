@@ -17,3 +17,6 @@ pnpm-debug.log*
 
 .expo/
 .expo-shared/
+
+# Generated
+apps/api/openapi.json
