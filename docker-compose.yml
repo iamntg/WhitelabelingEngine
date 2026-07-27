@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: wl-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: wl
+      POSTGRES_PASSWORD: wl
+      POSTGRES_DB: whitelabel
+    ports:
+      - '5433:5432'
+    volumes:
+      - wl-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U wl -d whitelabel']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  wl-postgres-data:

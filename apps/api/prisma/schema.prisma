@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Vertical {
+  restaurant
+  salon
+  studio
+}
+
+enum Role {
+  owner
+  admin
+}
+
+enum AssetKind {
+  logo
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  vertical  Vertical
+  createdAt DateTime @default(now()) @map("created_at")
+
+  memberships   Membership[]
+  draft         ThemeDraft?
+  versions      ThemeVersion[]
+  assets        Asset[]
+  sampleContent SampleContent?
+
+  @@map("tenant")
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  /// Supabase Auth user id (JWT `sub`). Not a foreign key — auth lives in Supabase.
+  userId    String   @map("user_id")
+  tenantId  String   @map("tenant_id")
+  role      Role     @default(owner)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tenantId])
+  @@index([userId])
+  @@map("membership")
+}
+
+/// Single mutable row per tenant. Autosaved on every token change.
+model ThemeDraft {
+  tenantId  String   @id @map("tenant_id")
+  tokens    Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String?  @map("updated_by")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("theme_draft")
+}
+
+/// Immutable snapshots. The live theme is always the highest version.
+model ThemeVersion {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  version       Int
+  tokens        Json
+  publishedAt   DateTime @default(now()) @map("published_at")
+  publishedBy   String?  @map("published_by")
+  changeSummary Json     @map("change_summary")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // The unique constraint is what makes concurrent publishes safe: two racing
+  // requests computing the same next version cannot both win.
+  @@unique([tenantId, version])
+  @@index([tenantId, version(sort: Desc)])
+  @@map("theme_version")
+}
+
+model Asset {
+  id        String    @id @default(cuid())
+  tenantId  String    @map("tenant_id")
+  kind      AssetKind @default(logo)
+  url       String
+  width     Int
+  height    Int
+  bytes     Int
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, kind])
+  @@map("asset")
+}
+
+/// Seeded menu / services / schedule data driving the preview and the RN app.
+model SampleContent {
+  tenantId String   @id @map("tenant_id")
+  vertical Vertical
+  payload  Json
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("sample_content")
+}
