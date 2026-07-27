@@ -45,9 +45,13 @@ export function useAutosave(): { flush: () => void } {
 
         try {
           const result = await api.theme.patchDraft(tenantId, patch, controller.signal);
-          useDraftStore
-            .getState()
-            .markSaved(result.tokens as ThemeTokens, result.liveVersion, result.nextVersion);
+          useDraftStore.getState().markSaved({
+            tokens: result.tokens as ThemeTokens,
+            liveTokens: (result.liveTokens as ThemeTokens | null) ?? null,
+            liveVersion: result.liveVersion,
+            nextVersion: result.nextVersion,
+            changeSummary: result.changeSummary,
+          });
         } catch (error) {
           if (error instanceof Error && error.name === 'AbortError') return;
 

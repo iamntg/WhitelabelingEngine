@@ -1,9 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColorScheme } from '@wl/theme';
 import { defaultTokens, diffTokens, validateForPublish, type ThemeTokens } from '@wl/theme';
 import { useMemo, useState } from 'react';
 import { PanelSection } from '../../components/chrome.js';
+import { ApiError } from '@wl/api-client';
 import { api } from '../../lib/api.js';
+import { useToast } from '../../lib/toast.jsx';
 import { useDraftStore } from '../../state/draft-store.js';
 import { Header } from './Header.jsx';
 import { BrandSection } from './sections/BrandSection.jsx';
@@ -12,11 +14,13 @@ import { ColorSection } from './sections/ColorSection.jsx';
 import { ShapeSection } from './sections/ShapeSection.jsx';
 import { TypographySection } from './sections/TypographySection.jsx';
 import { PreviewCanvas, type PreviewScreen } from '../preview/PreviewCanvas.jsx';
+import { PublishModal } from './PublishModal.jsx';
 import { useAutosave, useUndoRedoShortcuts } from './useAutosave.js';
 
 type SectionKey = 'brand' | 'color' | 'typography' | 'shape' | 'buttons';
 
 export function EditorPage() {
+  const [publishOpen, setPublishOpen] = useState(false);
   const [screen, setScreen] = useState<PreviewScreen>('home');
   const [scheme, setScheme] = useState<ColorScheme>('light');
   const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
@@ -31,6 +35,9 @@ export function EditorPage() {
   const serverTokens = useDraftStore((s) => s.serverTokens);
   const saveState = useDraftStore((s) => s.saveState);
   const liveVersion = useDraftStore((s) => s.liveVersion);
+  const liveTokens = useDraftStore((s) => s.liveTokens);
+  const nextVersion = useDraftStore((s) => s.nextVersion);
+  const savedChangeSummary = useDraftStore((s) => s.changeSummary);
   const apply = useDraftStore((s) => s.apply);
   const hydrate = useDraftStore((s) => s.hydrate);
 
@@ -50,8 +57,10 @@ export function EditorPage() {
       hydrate({
         tenantId: first.id,
         tokens: draft.tokens as ThemeTokens,
+        liveTokens: (draft.liveTokens as ThemeTokens | null) ?? null,
         liveVersion: draft.liveVersion,
         nextVersion: draft.nextVersion,
+        changeSummary: draft.changeSummary,
       });
       return { tenant: first, draft };
     },
@@ -71,12 +80,16 @@ export function EditorPage() {
 
   const validation = useMemo(() => (tokens ? validateForPublish(tokens) : null), [tokens]);
 
-  const changeCount = useMemo(() => {
-    if (!tokens || !serverTokens) return 0;
-    // Against the *live* theme, not the last save — the pill answers "how far
-    // am I from what customers see?"
-    return liveVersion === null ? 0 : diffTokens(serverTokens, tokens).count;
-  }, [tokens, serverTokens, liveVersion]);
+  // The diff shown is against what is *live*, not the last save — it answers
+  // "how far am I from what customers see?". While an edit is still unsaved the
+  // server's summary is one step behind, so it is recomputed locally from the
+  // same diffTokens the server uses; they agree by construction.
+  const changeSummary = useMemo(() => {
+    if (!tokens) return savedChangeSummary;
+    if (!liveTokens) return { count: 0, changes: [] };
+    if (tokens === serverTokens) return savedChangeSummary;
+    return diffTokens(liveTokens, tokens);
+  }, [tokens, serverTokens, liveTokens, savedChangeSummary]);
 
   const publishBlockedReason = useMemo(() => {
     if (!validation) return 'Loading…';
@@ -86,6 +99,35 @@ export function EditorPage() {
       ? `${first.label} is only ${first.ratio.toFixed(1)}:1. Fix it in the Colour section before publishing.`
       : `${validation.blockers.length} contrast problems must be fixed before publishing.`;
   }, [validation]);
+
+  const queryClient = useQueryClient();
+  const { push } = useToast();
+  const markPublishing = useDraftStore((s) => s.markPublishing);
+  const markPublished = useDraftStore((s) => s.markPublished);
+
+  const publish = useMutation({
+    mutationFn: async (acknowledgedWarnings: string[]) => {
+      const tenantId = useDraftStore.getState().tenantId;
+      if (!tenantId) throw new Error('No brand loaded');
+      markPublishing();
+      return api.theme.publish(tenantId, { acknowledgedWarnings });
+    },
+    onSuccess: async (result) => {
+      markPublished(result.version.version);
+      setPublishOpen(false);
+      push({ tone: 'neutral', message: `Published v${result.version.version}. Live shortly.` });
+      // The live theme moved, so the draft's diff and the brand list are stale.
+      await queryClient.invalidateQueries({ queryKey: ['bootstrap'] });
+    },
+    onError: (error) => {
+      // The server's verdict wins. It re-ran the same contrast check against
+      // the stored draft, so a rejection here means the client was out of date.
+      useDraftStore.setState({ saveState: 'dirty' });
+      if (error instanceof ApiError && error.code === 'contrast_blocked') {
+        void queryClient.invalidateQueries({ queryKey: ['bootstrap'] });
+      }
+    },
+  });
 
   const toggle = (key: SectionKey) =>
     setOpenSections((current) => ({ ...current, [key]: !current[key] }));
@@ -103,10 +145,10 @@ export function EditorPage() {
       <Header
         businessName={tokens.brand.businessName}
         saveState={saveState}
-        changeCount={changeCount}
+        changeCount={changeSummary.count}
         liveVersion={liveVersion}
         publishBlockedReason={publishBlockedReason}
-        onPublish={() => undefined}
+        onPublish={() => setPublishOpen(true)}
         onRetrySave={() => apply({ ...tokens })}
       />
 
@@ -162,7 +204,7 @@ export function EditorPage() {
               Reset to platform default
             </button>
             <span className="font-mono text-11 text-ink-fainter">
-              v{useDraftStore.getState().nextVersion}
+              v{nextVersion}
             </span>
           </div>
         </aside>
@@ -178,6 +220,25 @@ export function EditorPage() {
           />
         </main>
       </div>
+
+      <PublishModal
+        open={publishOpen}
+        businessName={tokens.brand.businessName}
+        draftTokens={tokens}
+        liveTokens={liveTokens}
+        liveVersion={liveVersion}
+        nextVersion={nextVersion}
+        changeSummary={changeSummary}
+        blockers={validation?.blockers ?? []}
+        warnings={validation?.warnings ?? []}
+        publishing={publish.isPending}
+        error={publish.error instanceof Error ? publish.error.message : null}
+        onPublish={(acknowledged) => publish.mutate(acknowledged)}
+        onClose={() => {
+          publish.reset();
+          setPublishOpen(false);
+        }}
+      />
     </div>
   );
 }

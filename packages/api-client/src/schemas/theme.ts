@@ -61,6 +61,12 @@ export const DraftResponse = z
     updatedBy: z.string().nullable(),
     /** Highest published version, or null if never published. */
     liveVersion: z.number().int().positive().nullable(),
+    /**
+     * The tokens currently live, so the publish modal can render a real
+     * before/after through the same resolver rather than approximating it.
+     * Null until the first publish.
+     */
+    liveTokens: ThemeTokens.nullable(),
     /** The version this draft would become on publish. */
     nextVersion: z.number().int().positive(),
     /** Diff against the live version — drives the header pill and the modal. */

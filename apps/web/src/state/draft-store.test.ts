@@ -9,9 +9,14 @@ function tokens(overrides: Partial<ThemeTokens['colors']> = {}): ThemeTokens {
 
 function hydrate(): ThemeTokens {
   const initial = tokens();
-  useDraftStore
-    .getState()
-    .hydrate({ tenantId: 't1', tokens: initial, liveVersion: 1, nextVersion: 2 });
+  useDraftStore.getState().hydrate({
+    tenantId: 't1',
+    tokens: initial,
+    liveTokens: initial,
+    liveVersion: 1,
+    nextVersion: 2,
+    changeSummary: { count: 0, changes: [] },
+  });
   return initial;
 }
 
@@ -139,7 +144,13 @@ describe('save lifecycle', () => {
     useDraftStore.getState().markSaving();
 
     useDraftStore.getState().apply(tokens({ primary: '#222222' }));
-    useDraftStore.getState().markSaved(saved, 1, 2);
+    useDraftStore.getState().markSaved({
+      tokens: saved,
+      liveTokens: saved,
+      liveVersion: 1,
+      nextVersion: 2,
+      changeSummary: { count: 0, changes: [] },
+    });
 
     expect(useDraftStore.getState().saveState).toBe('dirty');
     expect(useDraftStore.getState().tokens?.colors.primary).toBe('#222222');

@@ -51,6 +51,7 @@ export default async function themeRoutes(app: FastifyInstance) {
       const view = await buildDraftView(app.prisma, tenant, request.user?.id ?? null);
       return {
         tokens: view.tokens,
+        liveTokens: view.liveTokens,
         updatedAt: view.updatedAt.toISOString(),
         updatedBy: view.updatedBy,
         liveVersion: view.liveVersion,
@@ -103,6 +104,7 @@ export default async function themeRoutes(app: FastifyInstance) {
       const view = await buildDraftView(app.prisma, tenant, userId);
       return {
         tokens: view.tokens,
+        liveTokens: view.liveTokens,
         updatedAt: view.updatedAt.toISOString(),
         updatedBy: view.updatedBy,
         liveVersion: view.liveVersion,

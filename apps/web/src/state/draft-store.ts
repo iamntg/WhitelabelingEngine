@@ -1,5 +1,5 @@
 import type { ThemeTokensPatch } from '@wl/api-client';
-import type { ThemeTokens } from '@wl/theme';
+import type { ChangeSummary, ThemeTokens } from '@wl/theme';
 import { create } from 'zustand';
 
 /**
@@ -25,12 +25,22 @@ interface DraftStore {
   saveError: string | null;
   liveVersion: number | null;
   nextVersion: number;
+  /** What customers currently see. Null until the first publish. */
+  liveTokens: ThemeTokens | null;
+  /**
+   * Server-computed diff of the draft against the live version. Not derived
+   * here — the API stores the same object on the published version, so the
+   * modal and the version history describe a publish in identical words.
+   */
+  changeSummary: ChangeSummary;
 
   hydrate: (input: {
     tenantId: string;
     tokens: ThemeTokens;
+    liveTokens: ThemeTokens | null;
     liveVersion: number | null;
     nextVersion: number;
+    changeSummary: ChangeSummary;
   }) => void;
 
   /**
@@ -46,7 +56,13 @@ interface DraftStore {
   canRedo: () => boolean;
 
   markSaving: () => void;
-  markSaved: (tokens: ThemeTokens, liveVersion: number | null, nextVersion: number) => void;
+  markSaved: (input: {
+    tokens: ThemeTokens;
+    liveTokens: ThemeTokens | null;
+    liveVersion: number | null;
+    nextVersion: number;
+    changeSummary: ChangeSummary;
+  }) => void;
   markSaveFailed: (message: string) => void;
   /** Discards the optimistic value and returns to what the server last confirmed. */
   revert: () => void;
@@ -66,13 +82,17 @@ export const useDraftStore = create<DraftStore>((set, get) => ({
   saveError: null,
   liveVersion: null,
   nextVersion: 1,
+  liveTokens: null,
+  changeSummary: { count: 0, changes: [] },
 
-  hydrate: ({ tenantId, tokens, liveVersion, nextVersion }) => {
+  hydrate: ({ tenantId, tokens, liveTokens, liveVersion, nextVersion, changeSummary }) => {
     lastCoalesceKey = null;
     set({
       tenantId,
       tokens,
       serverTokens: tokens,
+      liveTokens,
+      changeSummary,
       past: [],
       future: [],
       saveState: 'clean',
@@ -130,11 +150,13 @@ export const useDraftStore = create<DraftStore>((set, get) => ({
 
   markSaving: () => set({ saveState: 'saving' }),
 
-  markSaved: (tokens, liveVersion, nextVersion) =>
+  markSaved: ({ tokens, liveTokens, liveVersion, nextVersion, changeSummary }) =>
     set((state) => ({
       serverTokens: tokens,
+      liveTokens,
       liveVersion,
       nextVersion,
+      changeSummary,
       // A newer edit may have landed while the request was in flight; do not
       // claim "saved" over the top of work the user has already done.
       saveState: state.saveState === 'saving' ? 'saved' : state.saveState,
@@ -153,7 +175,15 @@ export const useDraftStore = create<DraftStore>((set, get) => ({
   markPublishing: () => set({ saveState: 'publishing' }),
 
   markPublished: (version) =>
-    set({ saveState: 'published', liveVersion: version, nextVersion: version + 1 }),
+    set((state) => ({
+      saveState: 'published',
+      liveVersion: version,
+      nextVersion: version + 1,
+      // What was the draft is now what is live, so the diff collapses to empty
+      // until the next edit.
+      liveTokens: state.serverTokens,
+      changeSummary: { count: 0, changes: [] },
+    })),
 }));
 
 /**

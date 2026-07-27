@@ -82,6 +82,7 @@ export async function getOrCreateDraft(
 
 export interface DraftView {
   tokens: ThemeTokensType;
+  liveTokens: ThemeTokensType | null;
   updatedAt: Date;
   updatedBy: string | null;
   liveVersion: number | null;
@@ -106,6 +107,7 @@ export async function buildDraftView(
 
   return {
     tokens,
+    liveTokens,
     updatedAt: draft.updatedAt,
     updatedBy: draft.updatedBy,
     liveVersion: live?.version ?? null,
