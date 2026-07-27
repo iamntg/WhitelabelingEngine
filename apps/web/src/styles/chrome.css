@@ -1,0 +1,202 @@
+@import 'tailwindcss';
+
+/**
+ * The tool's own chrome.
+ *
+ * NON-NEGOTIABLE: every value here is desaturated. Neutral greys, near-black
+ * text, and exactly one muted accent used only for interactive affordances.
+ * The tenant's brand colours are the only saturated pixels on screen — never
+ * the save button, never a focus ring, never a hover state. If a tenant colour
+ * ever appears in this file, something has gone wrong.
+ *
+ * Every value is lifted from the design export.
+ */
+
+@theme {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --color-canvas: #f4f4f3;
+  --color-surface: #ffffff;
+  --color-subtle: #fbfbfa;
+  --color-subtle-2: #fcfcfb;
+  --color-hover: #f7f7f6;
+  --color-selected: #f2f2f0;
+  --color-bezel: #232326;
+
+  /* ── Borders: six distinct weights, deliberately ──────────────────────── */
+  --color-hairline: #e8e8e6;
+  --color-divider: #ededea;
+  --color-row: #f4f4f3;
+  --color-control: #e0e0dd;
+  --color-raised: #e4e4e0;
+  --color-trough: #eaeae7;
+  --color-dashed: #dcdcd8;
+  --color-dashed-empty: #d8d8d4;
+  --color-border-hover: #cfcfcb;
+  --color-border-hover-strong: #c4c4c0;
+
+  /* ── Text ramp ────────────────────────────────────────────────────────── */
+  --color-ink: #18181a;
+  --color-ink-strong: #2a2a2e;
+  --color-ink-heading: #3a3a40;
+  --color-ink-body: #55555c;
+  --color-ink-label: #6b6b72;
+  --color-ink-muted: #75757c;
+  --color-ink-helper: #85858b;
+  --color-ink-hint: #9a9aa0;
+  --color-ink-faint: #a3a3a8;
+  --color-ink-fainter: #b5b5b8;
+  --color-ink-chevron: #c9c9c6;
+
+  /* ── The single muted accent. Interactive states only. ────────────────── */
+  --color-accent: #8b8bd6;
+  --color-accent-soft: #b9b9f0;
+  --color-accent-bg: #fafaff;
+  --color-accent-selection: #dcdcf5;
+
+  /* ── Action (near-black, never brand-tinted) ──────────────────────────── */
+  --color-action: #18181a;
+  --color-action-hover: #303036;
+
+  /* ── Status: published ────────────────────────────────────────────────── */
+  --color-live-dot: #3f7d5c;
+  --color-live-bg: #f3f8f5;
+  --color-live-border: #dceae2;
+  --color-live-ink: #2f6149;
+  --color-idle-dot: #a8a29a;
+
+  /* ── Status: contrast warning (the only warm hue in the chrome) ───────── */
+  --color-warn-icon: #b98a2e;
+  --color-warn-bg: #fdfaf3;
+  --color-warn-border: #e9e2d4;
+  --color-warn-title: #4a3f26;
+  --color-warn-body: #7d7157;
+  --color-warn-btn-border: #e0d8c6;
+  --color-warn-btn-hover: #faf6ec;
+
+  /* ── Status: contrast failure. Desaturated toward the chrome's warmth so
+       it reads as serious without introducing a saturated red. ─────────── */
+  --color-fail-icon: #a4553f;
+  --color-fail-bg: #fdf6f4;
+  --color-fail-border: #ecdcd6;
+  --color-fail-title: #5c342a;
+  --color-fail-body: #86675e;
+  --color-fail-btn-border: #e2cec8;
+  --color-fail-btn-hover: #faf0ed;
+
+  /* ── Type scale. Half-pixel steps are deliberate — they are what makes
+       the panel read as dense rather than cramped. ───────────────────── */
+  --text-9-5: 9.5px;
+  --text-10: 10px;
+  --text-10-5: 10.5px;
+  --text-11: 11px;
+  --text-11-5: 11.5px;
+  --text-12: 12px;
+  --text-12-5: 12.5px;
+  --text-13: 13px;
+  --text-13-5: 13.5px;
+  --text-14: 14px;
+  --text-14-5: 14.5px;
+  --text-15: 15px;
+  --text-15-5: 15.5px;
+  --text-17: 17px;
+  --text-19: 19px;
+  --text-21: 21px;
+
+  /* ── Geometry ─────────────────────────────────────────────────────────── */
+  --radius-4: 4px;
+  --radius-5: 5px;
+  --radius-6: 6px;
+  --radius-7: 7px;
+  --radius-8: 8px;
+  --radius-9: 9px;
+  --radius-10: 10px;
+  --radius-11: 11px;
+  --radius-14: 14px;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-popover: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 28px rgba(0, 0, 0, 0.11);
+  --shadow-modal: 0 1px 2px rgba(0, 0, 0, 0.05), 0 24px 60px rgba(0, 0, 0, 0.14);
+  --shadow-phone: 0 1px 2px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.07);
+
+  --font-sans: Inter, Helvetica, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--color-accent-selection);
+  }
+
+  /* The design hides the native colour swatch chrome so the trigger can be a
+     styled chip with the input stretched invisibly over it. */
+  input[type='color'] {
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    padding: 0;
+    background: none;
+  }
+  input[type='color']::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  input[type='color']::-webkit-color-swatch {
+    border: none;
+    border-radius: 6px;
+  }
+
+  /* Every control gets a visible focus ring, extending the design's treatment
+     from inputs to swatches, radius cells and section headers. Keyboard users
+     must never have to guess where they are. */
+  :focus-visible {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(120, 120, 220, 0.13);
+  }
+}
+
+@utility focus-ring {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(120, 120, 220, 0.13);
+    border-color: var(--color-accent);
+  }
+}
+
+/* For dark controls, where the 13% ring disappears against near-black. */
+@utility focus-ring-strong {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(120, 120, 220, 0.28);
+  }
+}
+
+@utility icon {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
