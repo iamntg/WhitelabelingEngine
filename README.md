@@ -44,13 +44,28 @@ step 2.
 
 ```bash
 cp apps/mobile/.env.example apps/mobile/.env
-pnpm --filter @wl/mobile start
+pnpm --filter @wl/mobile start        # device or simulator
+pnpm --filter @wl/mobile web          # the same app, in a browser tab
 ```
 
 It fetches the published theme for `EXPO_PUBLIC_TENANT_SLUG`, caches it in
 AsyncStorage, applies `resolveTheme()` and renders one themed screen. On a
 physical device `localhost` is the device itself — use your machine's LAN
 address.
+
+`web` runs the real React Native source through `react-native-web` on
+<http://localhost:8081>, so it exercises the same components, the same fetch and
+cache path (AsyncStorage falls back to `localStorage`) and the same resolver as
+the native build. Worth knowing about it:
+
+- It needs `http://localhost:8081` in the API's `CORS_ORIGINS`. A browser sends
+  an `Origin` header where a device does not, so this is the one place the web
+  target is stricter than native.
+- It is a *debugging* view of the mobile app, not the customer-facing preview.
+  For "what will this brand look like", use the admin app's phone preview, which
+  is built for it and covers all four screens.
+- `apps/mobile/metro.config.js` exists because of this target — see the comments
+  there before changing it. Native bundling depends on it too.
 
 ## Layout
 
