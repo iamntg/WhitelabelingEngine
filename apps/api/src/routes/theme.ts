@@ -137,9 +137,9 @@ export default async function themeRoutes(app: FastifyInstance) {
 
       return {
         results: checkContrast(view.tokens),
-        blockers: validation.blockers,
+        failures: validation.failures,
         warnings: validation.warnings,
-        canPublish: validation.blockers.length === 0,
+        requiresConfirmation: validation.failures.length > 0 || validation.warnings.length > 0,
         changeSummary: view.changeSummary,
       };
     },
@@ -164,7 +164,7 @@ export default async function themeRoutes(app: FastifyInstance) {
         app.prisma,
         tenant,
         request.user?.id ?? null,
-        request.body.acknowledgedWarnings,
+        request.body.acknowledgedIssues,
       );
 
       const tokens = parseStoredTokens(version.tokens, `tenant ${tenant.id} v${version.version}`);

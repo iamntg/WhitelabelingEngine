@@ -80,7 +80,7 @@ describe('membership guard', () => {
     const routes: Array<[string, 'GET' | 'POST' | 'PATCH', unknown]> = [
       [`/v1/tenants/${TENANT_ID}/theme/draft`, 'PATCH', { colors: { primary: '#123456' } }],
       [`/v1/tenants/${TENANT_ID}/theme/validate`, 'POST', {}],
-      [`/v1/tenants/${TENANT_ID}/theme/publish`, 'POST', { acknowledgedWarnings: [] }],
+      [`/v1/tenants/${TENANT_ID}/theme/publish`, 'POST', { acknowledgedIssues: [] }],
       [`/v1/tenants/${TENANT_ID}/theme/versions`, 'GET', undefined],
       [`/v1/tenants/${TENANT_ID}/theme/rollback`, 'POST', { version: 1 }],
     ];
@@ -150,9 +150,7 @@ describe('PATCH draft', () => {
 });
 
 describe('publish', () => {
-  it('refuses a theme with a contrast blocker, even with the warning acknowledged', async () => {
-    // The client cannot talk its way past this: the server re-runs the check
-    // against the stored draft, not against anything the request supplied.
+  it('refuses a theme with a contrast failure that was never confirmed', async () => {
     const draft = state.drafts[0];
     if (draft) draft.tokens = testTokens({ accent: '#f5c518', background: '#ffffff' });
 
@@ -160,11 +158,46 @@ describe('publish', () => {
       method: 'POST',
       url: `/v1/tenants/${TENANT_ID}/theme/publish`,
       headers: asUser(TEST_USER),
-      payload: { acknowledgedWarnings: ['accent-on-background'] },
+      payload: { acknowledgedIssues: [] },
     });
 
     expect(res.statusCode).toBe(422);
-    expect(res.json().error.code).toBe('contrast_blocked');
+    expect(res.json().error.code).toBe('confirmation_required');
+    expect(res.json().error.details[0].path).toBe('accent-on-background');
+    expect(state.versions).toHaveLength(1);
+  });
+
+  it('publishes that same theme once the failure is confirmed', async () => {
+    // The owner's call to make. What the server will not accept is making it
+    // by omission — the check is re-run against the stored draft, so the
+    // acknowledgement has to name the problem that actually exists.
+    const draft = state.drafts[0];
+    if (draft) draft.tokens = testTokens({ accent: '#f5c518', background: '#ffffff' });
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/v1/tenants/${TENANT_ID}/theme/publish`,
+      headers: asUser(TEST_USER),
+      payload: { acknowledgedIssues: ['accent-on-background'] },
+    });
+
+    expect(res.statusCode).toBe(201);
+    expect(state.versions).toHaveLength(2);
+  });
+
+  it('does not accept an acknowledgement for a different pair', async () => {
+    const draft = state.drafts[0];
+    if (draft) draft.tokens = testTokens({ accent: '#f5c518', background: '#ffffff' });
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/v1/tenants/${TENANT_ID}/theme/publish`,
+      headers: asUser(TEST_USER),
+      payload: { acknowledgedIssues: ['text-on-surface'] },
+    });
+
+    expect(res.statusCode).toBe(422);
+    expect(res.json().error.code).toBe('confirmation_required');
     expect(state.versions).toHaveLength(1);
   });
 
@@ -176,7 +209,7 @@ describe('publish', () => {
       method: 'POST',
       url: `/v1/tenants/${TENANT_ID}/theme/publish`,
       headers: asUser(TEST_USER),
-      payload: { acknowledgedWarnings: [] },
+      payload: { acknowledgedIssues: [] },
     });
 
     expect(res.statusCode).toBe(201);
@@ -196,7 +229,7 @@ describe('publish', () => {
       method: 'POST',
       url: `/v1/tenants/${TENANT_ID}/theme/publish`,
       headers: asUser(TEST_USER),
-      payload: { acknowledgedWarnings: [] },
+      payload: { acknowledgedIssues: [] },
     });
 
     const v2 = state.versions.find((v) => v.version === 2);

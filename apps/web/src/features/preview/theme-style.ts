@@ -47,16 +47,14 @@ export function bodyText(
 }
 
 /**
- * The striped placeholder the design uses instead of stock photography.
- * A fake photo flatters the theme and hides exactly the contrast problems the
- * owner needs to see.
+ * The image-slot surface the design uses instead of stock photography. A fake
+ * photo flatters the theme and hides exactly the contrast problems the owner
+ * needs to see. The slot carries a line illustration of what the photo will be
+ * (see `illustrations.tsx`); this is only the ground it sits on, and it stays
+ * brand-independent so the art cannot pass itself off as the owner's colour.
  */
 export function placeholderSurface(theme: ResolvedTheme): CSSProperties {
-  return {
-    backgroundColor: theme.placeholder.fill,
-    backgroundImage:
-      'repeating-linear-gradient(135deg, rgba(127,127,127,0.14) 0 6px, transparent 6px 12px)',
-  };
+  return { backgroundColor: theme.placeholder.fill };
 }
 
 export function imageChip(theme: ResolvedTheme): CSSProperties {

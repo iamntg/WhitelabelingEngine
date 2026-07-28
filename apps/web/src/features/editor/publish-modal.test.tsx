@@ -29,7 +29,7 @@ function render(props: Partial<Parameters<typeof PublishModal>[0]> = {}) {
       liveVersion={1}
       nextVersion={2}
       changeSummary={live ? diffTokens(live, draft) : { count: 0, changes: [] }}
-      blockers={[]}
+      failures={[]}
       warnings={[]}
       publishing={false}
       error={null}
@@ -40,7 +40,7 @@ function render(props: Partial<Parameters<typeof PublishModal>[0]> = {}) {
   );
 }
 
-function blockersFor(t: ThemeTokens): ContrastResult[] {
+function failuresFor(t: ThemeTokens): ContrastResult[] {
   return checkContrast(t).filter((r) => r.level === 'fail' && r.blocking);
 }
 
@@ -122,16 +122,25 @@ describe('publish gating', () => {
     expect(html).not.toMatch(/Publish now<\/button>[\s\S]{0,50}disabled/);
   });
 
-  it('disables publish and explains why when a pair fails', () => {
+  it('offers a failing pair as a confirmation rather than a dead end', () => {
     const bad = tokens({ accent: '#f5c518', background: '#ffffff' });
-    const blockers = blockersFor(bad);
-    expect(blockers.length).toBeGreaterThan(0);
+    const failures = failuresFor(bad);
+    expect(failures.length).toBeGreaterThan(0);
 
-    const html = render({ draftTokens: bad, blockers });
-    expect(html).toContain('must be fixed first');
+    const html = render({ draftTokens: bad, failures });
+    // The consequence, then the way through — never "fix this first".
+    expect(html).toContain('will be hard to read in the app');
     expect(html).toContain('Prices, tags and labels in this colour will be hard to read.');
+    expect(html).toContain('type="checkbox"');
+    expect(html).toContain('Publish anyway');
+    expect(html).not.toContain('must be fixed');
+  });
+
+  it('holds the publish button until every failure is ticked', () => {
+    const bad = tokens({ accent: '#f5c518', background: '#ffffff' });
+    const html = render({ draftTokens: bad, failures: failuresFor(bad) });
     expect(html).toContain('disabled=""');
-    expect(html).toContain('Fix the contrast problems above before publishing');
+    expect(html).toContain('Confirm the contrast problems above before publishing');
   });
 
   it('requires an explicit checkbox for each warning', () => {
@@ -143,7 +152,7 @@ describe('publish gating', () => {
     expect(html).toContain('type="checkbox"');
     expect(html).toContain('Publish anyway');
     // Unticked warnings must leave the button disabled.
-    expect(html).toContain('Confirm the warnings above before publishing');
+    expect(html).toContain('Confirm the contrast problems above before publishing');
   });
 
   it('shows progress and locks the controls while publishing', () => {

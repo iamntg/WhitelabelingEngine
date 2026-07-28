@@ -69,8 +69,9 @@ export interface ContrastResult {
   foreground: string;
   background: string;
   /**
-   * False for pairs that are advisory only. A failing advisory pair shows a
-   * warning but never blocks publish — see `secondary-on-primary`.
+   * True for pairs the owner is actually asked about: failing ones hold the
+   * publish until acknowledged. False for advisory pairs, which are measured
+   * and reported but never surfaced or gated — see `secondary-on-primary`.
    */
   blocking: boolean;
 }
@@ -247,31 +248,47 @@ export function checkContrast(
 /* Publish gating                                                             */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Contrast never refuses a publish outright — it requires the owner to say so.
+ *
+ * A failing pair used to be unpublishable full stop. That is the wrong party
+ * holding the veto: it is their brand, the check is a heuristic over two
+ * colours, and it cannot know that the accent in question only ever appears as
+ * a 24px chip. Owners who genuinely need the colour are left with no route
+ * forward except to abandon it, and the tool ends up arguing with the person it
+ * is meant to serve.
+ *
+ * So both severities now work the same way and differ only in tone: nothing
+ * ships until the owner acknowledges each failing pair by id. Publishing an
+ * illegible theme stays possible, but it cannot happen by accident, and the
+ * acknowledgement is re-checked on the server against the stored draft — a
+ * client that simply stops sending the list is refused, exactly as before.
+ */
 export interface PublishValidation {
   ok: boolean;
   results: ContrastResult[];
-  /** Blocking failures. Publish is impossible while any of these exist. */
-  blockers: ContrastResult[];
-  /** Warn-level pairs that require explicit acknowledgement. */
+  /** Fail-level pairs. Publishable, but only once explicitly acknowledged. */
+  failures: ContrastResult[];
+  /** Warn-level pairs. Same acknowledgement, softer tone. */
   warnings: ContrastResult[];
-  /** Warnings the caller did not acknowledge. Non-empty means publish is refused. */
+  /** Failures and warnings the caller did not acknowledge. Non-empty refuses the publish. */
   unacknowledged: ContrastResult[];
 }
 
 export function validateForPublish(
   tokens: ThemeTokens,
-  acknowledgedWarnings: readonly string[] = [],
+  acknowledgedIssues: readonly string[] = [],
 ): PublishValidation {
   const results = checkContrast(tokens);
-  const blockers = results.filter((r) => r.level === 'fail' && r.blocking);
+  const failures = results.filter((r) => r.level === 'fail' && r.blocking);
   const warnings = results.filter((r) => r.level === 'warn' && r.blocking);
-  const acknowledged = new Set(acknowledgedWarnings);
-  const unacknowledged = warnings.filter((r) => !acknowledged.has(r.pairId));
+  const acknowledged = new Set(acknowledgedIssues);
+  const unacknowledged = [...failures, ...warnings].filter((r) => !acknowledged.has(r.pairId));
 
   return {
-    ok: blockers.length === 0 && unacknowledged.length === 0,
+    ok: unacknowledged.length === 0,
     results,
-    blockers,
+    failures,
     warnings,
     unacknowledged,
   };

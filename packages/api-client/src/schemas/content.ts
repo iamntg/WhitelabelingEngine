@@ -35,19 +35,30 @@ export const SampleItem = z
   })
   .strict();
 
+export const SampleHeroSlide = z
+  .object({
+    /** Accent pill over the slide, e.g. "Tuesday · 2 for 1 pasta". */
+    promoLabel: z.string().min(1),
+    imageLabel: z.string().min(1),
+  })
+  .strict();
+
 export const SampleHome = z
   .object({
-    /** Accent pill over the hero, e.g. "Tuesday · 2 for 1 pasta". */
-    promoLabel: z.string().min(1),
-    heroImageLabel: z.string().min(1),
+    /**
+     * The hero carousel. More than one slide is the point — a single promo
+     * hides how a second accent pill sits against the owner's colours, which
+     * is the first thing that breaks when a brand is applied.
+     */
+    heroSlides: z.array(SampleHeroSlide).min(1).max(4),
     headline: z.string().min(1),
     subline: z.string().min(1),
     primaryActionLabel: z.string().min(1),
     secondaryActionLabel: z.string().min(1),
     listTitle: z.string().min(1),
     listLinkLabel: z.string().min(1),
-    /** Two items featured on the home screen. */
-    featuredItemIds: z.array(Id).min(1).max(3),
+    /** Items featured on the home screen, rendered as a two-column card grid. */
+    featuredItemIds: z.array(Id).min(1).max(6),
   })
   .strict();
 
@@ -166,6 +177,7 @@ export const SampleContent = z
 
 export type SampleContent = z.infer<typeof SampleContent>;
 export type SampleItem = z.infer<typeof SampleItem>;
+export type SampleHeroSlide = z.infer<typeof SampleHeroSlide>;
 export type SampleCategory = z.infer<typeof SampleCategory>;
 export type SampleTab = z.infer<typeof SampleTab>;
 

@@ -134,26 +134,21 @@ export async function publishDraft(
   prisma: PrismaClient,
   tenant: { id: string; name: string; vertical: Vertical },
   userId: string | null,
-  acknowledgedWarnings: readonly string[],
+  acknowledgedIssues: readonly string[],
 ): Promise<PublishResult> {
   const draft = await getOrCreateDraft(prisma, tenant, userId);
   const tokens = parseStoredTokens(draft.tokens, `draft of tenant ${tenant.id}`);
 
-  const validation = validateForPublish(tokens, acknowledgedWarnings);
+  const validation = validateForPublish(tokens, acknowledgedIssues);
 
-  if (validation.blockers.length > 0) {
-    throw unprocessable(
-      'contrast_blocked',
-      'This theme has contrast problems that must be fixed before publishing.',
-      validation.blockers.map((b) => ({ path: b.pairId, message: b.message })),
-    );
-  }
-
+  // A failing pair is publishable — but only deliberately. The acknowledgement
+  // is checked against the *stored* draft, so a client that skips the modal or
+  // replays an old list is refused even though the owner could have said yes.
   if (validation.unacknowledged.length > 0) {
     throw unprocessable(
-      'warnings_unacknowledged',
-      'Confirm the contrast warnings before publishing.',
-      validation.unacknowledged.map((w) => ({ path: w.pairId, message: w.message })),
+      'confirmation_required',
+      'Confirm the contrast problems before publishing.',
+      validation.unacknowledged.map((issue) => ({ path: issue.pairId, message: issue.message })),
     );
   }
 

@@ -56,7 +56,11 @@ export function Header({
   saveState: SaveState;
   changeCount: number;
   liveVersion: number | null;
-  /** Non-null disables publish and explains why, per the spec. */
+  /**
+   * Non-null disables publish and explains why. Contrast is deliberately not
+   * one of these reasons — a failing pair is argued in the publish modal, where
+   * the owner can see the evidence and overrule it.
+   */
   publishBlockedReason: string | null;
   onBack: () => void;
   onPublish: () => void;
@@ -114,8 +118,6 @@ export function Header({
             </button>
           ) : null}
         </div>
-
-        <Button>Preview</Button>
 
         <DisabledTooltip reason={publishBlockedReason}>
           <Button

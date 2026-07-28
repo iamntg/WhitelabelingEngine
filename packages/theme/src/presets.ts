@@ -6,19 +6,28 @@ import { SCHEMA_VERSION, type ThemeTokens } from './schema.js';
  * Two different things live here and they are not interchangeable:
  *
  *  - `COLOR_SWATCHES` — the per-channel quick picks shown beside each colour
- *    row. Lifted verbatim from the design export. These are *suggestions*, and
- *    some combinations of them will legitimately trip a contrast warning; that
- *    is the guardrail doing its job, not a bug in the swatch list.
+ *    row. Lifted verbatim from the design export, saturation and all. These are
+ *    *suggestions*: four of the five accents sit under 3:1 on white and will
+ *    trip the accent guardrail on the spot, which is the guardrail doing its
+ *    job — the owner gets the warning plus a one-click nudge to the nearest
+ *    passing shade of the same hue, rather than a palette pre-dulled on their
+ *    behalf.
  *
  *  - `PRESETS` — complete, publishable themes. Every one of these is asserted
- *    to produce zero contrast failures in `test/presets.test.ts`. A preset that
+ *    to produce zero contrast failures in `test/registry.test.ts`. A preset that
  *    a new owner cannot publish is worse than no preset at all.
+ *
+ *    Each preset draws its colours from the swatch list above, with accents
+ *    taken to the darkest point on the same hue that still clears 3:1 against
+ *    that preset's background (via `nudgeToRatio`, the same function behind the
+ *    editor's "use suggested colour"). `ember` is the design export's own
+ *    default theme, accent included.
  */
 
 export const COLOR_SWATCHES = {
   primary: ['#e23d28', '#1c7c54', '#1f5fd0', '#7b3fa0', '#111114'],
   secondary: ['#0f5a54', '#8a4b1f', '#243b6b', '#6b2b45', '#4a4a50'],
-  accent: ['#b8860b', '#1f8a63', '#c2521f', '#5d55a8', '#5f6670'],
+  accent: ['#f5c518', '#37c08a', '#ff7a45', '#8e86c4', '#bfc4c9'],
   background: ['#ffffff', '#fffbf2', '#faf8f4', '#f6f5f2', '#f3efe7'],
 } as const;
 
@@ -65,10 +74,12 @@ export const PRESETS: readonly ThemePreset[] = [
   preset(
     'ember',
     'Ember',
-    'Warm and appetising. Built for menus.',
+    'Hot vermillion and gold. Built for menus.',
     'restaurant',
     'Your Restaurant',
-    { primary: '#b4472b', secondary: '#2f4a3f', accent: '#a8710c', background: '#fffbf2' },
+    // The design export's own default theme, accent nudged from #f5c518 to the
+    // deepest gold that still separates from white.
+    { primary: '#e23d28', secondary: '#0f5a54', accent: '#ae8a00', background: '#ffffff' },
     'editorial',
     'rounded',
     'filled',
@@ -76,10 +87,10 @@ export const PRESETS: readonly ThemePreset[] = [
   preset(
     'grove',
     'Grove',
-    'Calm greens with plenty of air.',
+    'Deep green and lilac, with plenty of air.',
     'studio',
     'Your Studio',
-    { primary: '#1f5e4a', secondary: '#37456b', accent: '#2f7d63', background: '#ffffff' },
+    { primary: '#1c7c54', secondary: '#243b6b', accent: '#8e86c4', background: '#ffffff' },
     'modern',
     'subtle',
     'filled',
@@ -87,10 +98,10 @@ export const PRESETS: readonly ThemePreset[] = [
   preset(
     'graphite',
     'Graphite',
-    'Near-black and confident. Lets photography carry the app.',
+    'Near-black and confident, cut with emerald.',
     'salon',
     'Your Salon',
-    { primary: '#1c1c1f', secondary: '#4a4a50', accent: '#5f6670', background: '#ffffff' },
+    { primary: '#111114', secondary: '#4a4a50', accent: '#00a270', background: '#ffffff' },
     'bold',
     'sharp',
     'outline',
@@ -98,10 +109,10 @@ export const PRESETS: readonly ThemePreset[] = [
   preset(
     'harbour',
     'Harbour',
-    'Cool, technical and precise.',
+    'Electric blue against a warm orange. Cool and precise.',
     'studio',
     'Your Studio',
-    { primary: '#2a4a7b', secondary: '#37456b', accent: '#b25c2a', background: '#f6f5f2' },
+    { primary: '#1f5fd0', secondary: '#8a4b1f', accent: '#e25f28', background: '#f6f5f2' },
     'technical',
     'subtle',
     'filled',
@@ -109,10 +120,10 @@ export const PRESETS: readonly ThemePreset[] = [
   preset(
     'plum',
     'Plum',
-    'Rich and considered. Suits salons and treatment menus.',
+    'Rich purple and old gold. Suits salons and treatment menus.',
     'salon',
     'Your Salon',
-    { primary: '#6b3f8c', secondary: '#5a3a46', accent: '#8a5aa8', background: '#faf8f4' },
+    { primary: '#7b3fa0', secondary: '#6b2b45', accent: '#a88600', background: '#faf8f4' },
     'grand',
     'rounded',
     'soft',
@@ -120,10 +131,10 @@ export const PRESETS: readonly ThemePreset[] = [
   preset(
     'clay',
     'Clay',
-    'Soft terracotta and sand. Friendly without being loud.',
+    'Terracotta and sand, with a green that wakes it up.',
     'restaurant',
     'Your Café',
-    { primary: '#b6522f', secondary: '#7a5c3e', accent: '#96700f', background: '#f3efe7' },
+    { primary: '#8a4b1f', secondary: '#0f5a54', accent: '#009768', background: '#f3efe7' },
     'modern',
     'pill',
     'soft',

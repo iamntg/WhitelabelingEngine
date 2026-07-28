@@ -27,7 +27,12 @@ interface SeedBrand {
   name: string;
   vertical: Vertical;
   presetId: string;
-  /** Applied on top of the preset so each brand looks genuinely its own. */
+  /**
+   * Applied on top of the preset. Kept to whatever actually distinguishes the
+   * brand from its starting point — the presets already differ from each other,
+   * and an override that restates the preset's own colour is a second copy of
+   * the palette that goes stale the moment the palette moves.
+   */
   overrides: Partial<ThemeTokens['colors']> & {
     pairingId?: ThemeTokens['typography']['pairingId'];
     radiusScale?: ThemeTokens['shape']['radiusScale'];
@@ -48,24 +53,19 @@ const BRANDS: SeedBrand[] = [
     name: 'Olive & Ash Kitchen',
     vertical: 'restaurant',
     presetId: 'ember',
-    overrides: { primary: '#b4472b', secondary: '#2f4a3f', accent: '#a8710c' },
+    // The design export's demo brand, on the design export's own theme.
+    overrides: {},
     publishCount: 1,
     // Leaves the brand list showing "unpublished changes" and the editor
     // showing a non-empty diff in the publish modal.
-    draftEdits: { accent: '#96700f', radiusScale: 'pill' },
+    draftEdits: { accent: '#e96730', radiusScale: 'pill' },
   },
   {
     slug: 'fern-fold-studio',
     name: 'Fern & Fold Studio',
     vertical: 'studio',
     presetId: 'grove',
-    overrides: {
-      primary: '#1f5e4a',
-      secondary: '#37456b',
-      accent: '#2f7d63',
-      pairingId: 'modern',
-      radiusScale: 'subtle',
-    },
+    overrides: { background: '#fffbf2' },
     publishCount: 2,
   },
   {
@@ -73,13 +73,7 @@ const BRANDS: SeedBrand[] = [
     name: 'Palmetto Nail Bar',
     vertical: 'salon',
     presetId: 'plum',
-    overrides: {
-      primary: '#6b3f8c',
-      secondary: '#5a3a46',
-      accent: '#8a5aa8',
-      pairingId: 'grand',
-      buttonStyle: 'soft',
-    },
+    overrides: { radiusScale: 'pill' },
     publishCount: 0,
   },
 ];
@@ -116,10 +110,10 @@ async function seedBrand(brand: SeedBrand): Promise<void> {
   // A seed that ships an unpublishable theme would make the publish button
   // look broken on a fresh database.
   const validation = validateForPublish(published);
-  if (validation.blockers.length > 0) {
+  if (validation.failures.length > 0) {
     throw new Error(
-      `Seed theme for ${brand.slug} has contrast blockers: ` +
-        validation.blockers.map((b) => `${b.pairId} (${b.ratio}:1)`).join(', '),
+      `Seed theme for ${brand.slug} has contrast failures: ` +
+        validation.failures.map((b) => `${b.pairId} (${b.ratio}:1)`).join(', '),
     );
   }
 

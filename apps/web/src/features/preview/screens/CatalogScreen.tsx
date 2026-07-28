@@ -46,7 +46,7 @@ export function CatalogScreen({ theme, content }: ScreenProps) {
       </div>
 
       <div style={{ flex: 1, padding: '0 20px', display: 'flex', flexDirection: 'column' }}>
-        {content.items.slice(0, 5).map((item) => (
+        {content.items.slice(0, 5).map((item, index) => (
           <div
             key={item.id}
             style={{
@@ -86,7 +86,7 @@ export function CatalogScreen({ theme, content }: ScreenProps) {
                 {money(content, item.price.amount)}
               </div>
             </div>
-            <Thumb theme={theme} size={62} />
+            <Thumb theme={theme} size={62} vertical={content.vertical} index={index} />
           </div>
         ))}
       </div>

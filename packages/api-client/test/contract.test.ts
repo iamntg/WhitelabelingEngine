@@ -88,8 +88,7 @@ describe('SampleContent integrity', () => {
     currency: 'USD',
     locale: 'en-US',
     home: {
-      promoLabel: 'p',
-      heroImageLabel: 'hero image 1200×800',
+      heroSlides: [{ promoLabel: 'p', imageLabel: 'hero image 1200×800' }],
       headline: 'h',
       subline: 's',
       primaryActionLabel: 'a',
@@ -246,11 +245,11 @@ describe('ApiError', () => {
 
   it('reads a structured error body when present', async () => {
     const response = new Response(
-      JSON.stringify({ error: { code: 'contrast_blocked', message: 'Fix contrast first' } }),
+      JSON.stringify({ error: { code: 'confirmation_required', message: 'Confirm the contrast problems' } }),
       { status: 422, headers: { 'content-type': 'application/json' } },
     );
     const error = await ApiError.fromResponse(response);
-    expect(error.code).toBe('contrast_blocked');
-    expect(error.message).toBe('Fix contrast first');
+    expect(error.code).toBe('confirmation_required');
+    expect(error.message).toBe('Confirm the contrast problems');
   });
 });

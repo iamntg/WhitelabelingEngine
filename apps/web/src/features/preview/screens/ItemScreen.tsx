@@ -1,5 +1,6 @@
+import { ItemArt } from '../illustrations.jsx';
 import { bodyText, buttonSurface, displayText, radius } from '../theme-style.js';
-import { ImageSlot, itemById, money, type ScreenProps } from './shared.jsx';
+import { ImageSlot, itemById, itemIndex, money, type ScreenProps } from './shared.jsx';
 
 export function ItemScreen({ theme, content }: ScreenProps) {
   const item = itemById(content, content.detail.itemId);
@@ -8,7 +9,12 @@ export function ItemScreen({ theme, content }: ScreenProps) {
   return (
     <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '0 20px' }}>
-        <ImageSlot theme={theme} height={232} label={content.detail.imageLabel} />
+        <ImageSlot
+          theme={theme}
+          height={232}
+          label={content.detail.imageLabel}
+          art={<ItemArt vertical={content.vertical} index={itemIndex(content, item.id)} size={118} />}
+        />
       </div>
 
       <div style={{ padding: '16px 20px 0' }}>

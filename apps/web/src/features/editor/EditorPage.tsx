@@ -95,14 +95,11 @@ export function EditorPage({
     return diffTokens(liveTokens, tokens);
   }, [tokens, serverTokens, liveTokens, savedChangeSummary]);
 
-  const publishBlockedReason = useMemo(() => {
-    if (!validation) return 'Loading…';
-    if (validation.blockers.length === 0) return null;
-    const [first] = validation.blockers;
-    return validation.blockers.length === 1 && first
-      ? `${first.label} is only ${first.ratio.toFixed(1)}:1. Fix it in the Colour section before publishing.`
-      : `${validation.blockers.length} contrast problems must be fixed before publishing.`;
-  }, [validation]);
+  // Contrast no longer disables this button. A failing pair is something the
+  // owner confirms inside the modal, where they can see both phones and read
+  // what the problem actually is — refusing at the header meant the argument
+  // happened before they were shown the evidence.
+  const publishBlockedReason = validation ? null : 'Loading…';
 
   const queryClient = useQueryClient();
   const { push } = useToast();
@@ -110,11 +107,11 @@ export function EditorPage({
   const markPublished = useDraftStore((s) => s.markPublished);
 
   const publish = useMutation({
-    mutationFn: async (acknowledgedWarnings: string[]) => {
+    mutationFn: async (acknowledgedIssues: string[]) => {
       const tenantId = useDraftStore.getState().tenantId;
       if (!tenantId) throw new Error('No brand loaded');
       markPublishing();
-      return api.theme.publish(tenantId, { acknowledgedWarnings });
+      return api.theme.publish(tenantId, { acknowledgedIssues });
     },
     onSuccess: async (result) => {
       markPublished(result.version.version);
@@ -126,9 +123,10 @@ export function EditorPage({
     },
     onError: (error) => {
       // The server's verdict wins. It re-ran the same contrast check against
-      // the stored draft, so a rejection here means the client was out of date.
+      // the stored draft, so a rejection here means the client was out of date —
+      // it confirmed a set of problems that is no longer the set that exists.
       useDraftStore.setState({ saveState: 'dirty' });
-      if (error instanceof ApiError && error.code === 'contrast_blocked') {
+      if (error instanceof ApiError && error.code === 'confirmation_required') {
         void queryClient.invalidateQueries({ queryKey: ['bootstrap', tenantId] });
       }
     },
@@ -237,7 +235,7 @@ export function EditorPage({
         liveVersion={liveVersion}
         nextVersion={nextVersion}
         changeSummary={changeSummary}
-        blockers={validation?.blockers ?? []}
+        failures={validation?.failures ?? []}
         warnings={validation?.warnings ?? []}
         publishing={publish.isPending}
         error={publish.error instanceof Error ? publish.error.message : null}

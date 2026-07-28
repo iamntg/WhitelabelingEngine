@@ -149,16 +149,31 @@ describe('validateForPublish', () => {
   it('allows a clean theme through', () => {
     const validation = validateForPublish(tokens());
     expect(validation.ok).toBe(true);
-    expect(validation.blockers).toEqual([]);
+    expect(validation.failures).toEqual([]);
   });
 
-  it('blocks on a hard failure regardless of acknowledgement', () => {
-    const validation = validateForPublish(
-      tokens({ accent: '#f5c518', background: '#ffffff' }),
-      ALL_PAIRS,
-    );
+  it('refuses a hard failure until it is acknowledged, then allows it', () => {
+    const t = tokens({ accent: '#f5c518', background: '#ffffff' });
+
+    const before = validateForPublish(t);
+    expect(before.failures.map((f) => f.pairId)).toContain('accent-on-background');
+    expect(before.unacknowledged.map((f) => f.pairId)).toContain('accent-on-background');
+    expect(before.ok).toBe(false);
+
+    // The owner's call, not the tool's — but it has to be made explicitly, and
+    // per pair, so it cannot be inherited from some earlier blanket override.
+    const after = validateForPublish(t, ['accent-on-background']);
+    expect(after.failures.map((f) => f.pairId)).toContain('accent-on-background');
+    expect(after.unacknowledged).toEqual([]);
+    expect(after.ok).toBe(true);
+  });
+
+  it('does not let acknowledging one pair carry another through', () => {
+    const t = tokens({ accent: '#f5c518', primary: '#f7e08a', background: '#ffffff' });
+    const validation = validateForPublish(t, ['accent-on-background']);
+    expect(validation.failures.length).toBeGreaterThan(1);
+    expect(validation.unacknowledged.map((f) => f.pairId)).toContain('primary-on-background');
     expect(validation.ok).toBe(false);
-    expect(validation.blockers.map((b) => b.pairId)).toContain('accent-on-background');
   });
 
   it('refuses an unacknowledged warning but allows an acknowledged one', () => {
@@ -173,14 +188,16 @@ describe('validateForPublish', () => {
     expect(after.ok).toBe(true);
   });
 
-  it('never blocks on an advisory pair', () => {
+  it('never asks about an advisory pair', () => {
     // Secondary and primary nearly identical: the advisory pair fails, but the
-    // combination never renders, so publish must still be possible.
+    // combination never renders, so publish must go through untouched — an
+    // owner cannot act on a warning about something they cannot see.
     const t = tokens({ primary: '#b4472b', secondary: '#b4472b' });
     const validation = validateForPublish(t);
     const advisory = validation.results.find((r) => r.pairId === 'secondary-on-primary');
     expect(advisory?.level).toBe('fail');
-    expect(validation.blockers.map((b) => b.pairId)).not.toContain('secondary-on-primary');
+    expect(validation.failures.map((f) => f.pairId)).not.toContain('secondary-on-primary');
+    expect(validation.ok).toBe(true);
   });
 
   it('is deterministic — the server reaches the same verdict as the client', () => {

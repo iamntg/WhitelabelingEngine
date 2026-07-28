@@ -81,10 +81,15 @@ export type PatchDraftBody = z.infer<typeof PatchDraftBody>;
 export const ValidateResponse = z
   .object({
     results: z.array(ContrastResultWire),
-    blockers: z.array(ContrastResultWire),
+    /** Fail-level pairs. Publishable once acknowledged, never silently. */
+    failures: z.array(ContrastResultWire),
     warnings: z.array(ContrastResultWire),
-    /** False when a blocker exists. The publish button reads this, not the array length. */
-    canPublish: z.boolean(),
+    /**
+     * True when publishing this draft needs the owner to confirm something.
+     * Contrast no longer forbids a publish, so there is no "cannot publish"
+     * state to report — only "not without saying so".
+     */
+    requiresConfirmation: z.boolean(),
     changeSummary: ChangeSummaryWire,
   })
   .strict();
@@ -92,8 +97,8 @@ export type ValidateResponse = z.infer<typeof ValidateResponse>;
 
 export const PublishBody = z
   .object({
-    /** Pair ids the owner explicitly ticked in the modal. */
-    acknowledgedWarnings: z.array(z.string()).default([]),
+    /** Pair ids the owner explicitly ticked in the modal, failures included. */
+    acknowledgedIssues: z.array(z.string()).default([]),
   })
   .strict();
 export type PublishBody = z.infer<typeof PublishBody>;

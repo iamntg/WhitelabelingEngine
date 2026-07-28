@@ -158,10 +158,13 @@ function ColorRow({
 /**
  * The contrast card, in two tones.
  *
- * `fail` blocks publish, so it gets the firmer treatment; `warn` keeps the
- * design's amber. Both lead with the consequence — what will be hard to read —
- * rather than with the WCAG rule, because the owner is choosing a colour, not
- * auditing a spec.
+ * `fail` gets the firmer treatment; `warn` keeps the design's amber. Both lead
+ * with the consequence — what will be hard to read — rather than with the WCAG
+ * rule, because the owner is choosing a colour, not auditing a spec.
+ *
+ * Neither one forbids anything. A failing pair costs an extra confirmation at
+ * publish and nothing more, so this card is an argument, not a barrier — which
+ * is why it always carries the one-click fix rather than just the complaint.
  */
 function ContrastCard({ issue, onFix }: { issue: ContrastResult; onFix?: (() => void) | undefined }) {
   const failing = issue.level === 'fail';

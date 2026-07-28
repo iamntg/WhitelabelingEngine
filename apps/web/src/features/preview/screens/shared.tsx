@@ -1,6 +1,7 @@
 import type { SampleContent, SampleItem } from '@wl/api-client';
 import { formatMoney } from '@wl/api-client';
 import type { ResolvedTheme } from '@wl/theme';
+import { ItemArt } from '../illustrations.jsx';
 import { bodyText, imageChip, placeholderSurface, radius } from '../theme-style.js';
 
 /**
@@ -20,22 +21,38 @@ export function itemById(content: SampleContent, id: string): SampleItem | undef
   return content.items.find((item) => item.id === id);
 }
 
+/**
+ * An item's position in the payload, which is what picks its illustration —
+ * so the same dish draws the same thing on the list, the card and the detail.
+ */
+export function itemIndex(content: SampleContent, id: string): number {
+  return Math.max(
+    0,
+    content.items.findIndex((item) => item.id === id),
+  );
+}
+
 export function money(content: SampleContent, amount: number): string {
   return formatMoney({ amount, currency: content.currency }, content.locale);
 }
 
-/** Striped image placeholder with an honest dimension label. */
+/**
+ * Image placeholder: line art of what the photo will be, plus the honest
+ * dimension label. See `illustrations.tsx` for why it draws rather than stripes.
+ */
 export function ImageSlot({
   theme,
   height,
   label,
   cornerRadius,
+  art,
   children,
 }: {
   theme: ResolvedTheme;
   height: number;
   label?: string;
   cornerRadius?: number;
+  art?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   return (
@@ -48,15 +65,46 @@ export function ImageSlot({
         alignItems: 'flex-end',
         padding: '12px',
         position: 'relative',
+        overflow: 'hidden',
       }}
     >
+      {art ? <ArtLayer theme={theme}>{art}</ArtLayer> : null}
       {children}
-      {label ? <span style={imageChip(theme)}>{label}</span> : null}
+      {/* Positioned, so it paints above the absolutely-positioned art layer. */}
+      {label ? <span style={{ ...imageChip(theme), position: 'relative' }}>{label}</span> : null}
     </div>
   );
 }
 
-export function Thumb({ theme, size }: { theme: ResolvedTheme; size: number }) {
+/** Centres the illustration in a slot and gives it the placeholder ink colour. */
+function ArtLayer({ theme, children }: { theme: ResolvedTheme; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: theme.placeholder.ink,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function Thumb({
+  theme,
+  size,
+  vertical,
+  index,
+}: {
+  theme: ResolvedTheme;
+  size: number;
+  vertical?: SampleContent['vertical'] | undefined;
+  index?: number | undefined;
+}) {
   return (
     <div
       style={{
@@ -65,10 +113,14 @@ export function Thumb({ theme, size }: { theme: ResolvedTheme; size: number }) {
         height: `${size}px`,
         flex: `0 0 ${size}px`,
         borderRadius: radius(theme.radius.md),
-        backgroundImage:
-          'repeating-linear-gradient(135deg, rgba(127,127,127,0.15) 0 5px, transparent 5px 10px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: theme.placeholder.ink,
       }}
-    />
+    >
+      <ItemArt vertical={vertical} index={index} size={Math.round(size * 0.62)} />
+    </div>
   );
 }
 

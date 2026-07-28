@@ -19,6 +19,12 @@ import { MiniPhone } from '../preview/MiniPhone.jsx';
  * The change list is *not* diffed here. The server computes it and stores it on
  * the version, so this modal, the version history, and a version opened a year
  * from now all describe the same publish in the same words.
+ *
+ * This is also where contrast is settled. Failures and warnings both appear as
+ * things to tick rather than things to fix — the owner can ship an illegible
+ * accent if they mean to, but only after reading what it costs, with the live
+ * theme sitting next to it for comparison. The two tones differ in how hard
+ * they argue, not in whether they can be overridden.
  */
 
 export function PublishModal({
@@ -29,7 +35,7 @@ export function PublishModal({
   liveVersion,
   nextVersion,
   changeSummary,
-  blockers,
+  failures,
   warnings,
   publishing,
   error,
@@ -43,11 +49,11 @@ export function PublishModal({
   liveVersion: number | null;
   nextVersion: number;
   changeSummary: ChangeSummary;
-  blockers: ContrastResult[];
+  failures: ContrastResult[];
   warnings: ContrastResult[];
   publishing: boolean;
   error: string | null;
-  onPublish: (acknowledgedWarnings: string[]) => void;
+  onPublish: (acknowledgedIssues: string[]) => void;
   onClose: () => void;
 }) {
   const [acknowledged, setAcknowledged] = useState<Set<string>>(new Set());
@@ -99,8 +105,9 @@ export function PublishModal({
 
   if (!open) return null;
 
-  const unacknowledged = warnings.filter((w) => !acknowledged.has(w.pairId));
-  const canPublish = blockers.length === 0 && unacknowledged.length === 0 && !publishing;
+  const issues = [...failures, ...warnings];
+  const unacknowledged = issues.filter((issue) => !acknowledged.has(issue.pairId));
+  const canPublish = unacknowledged.length === 0 && !publishing;
 
   const toggle = (pairId: string) =>
     setAcknowledged((current) => {
@@ -156,25 +163,21 @@ export function PublishModal({
             <ComparePane label="New theme" note={`Draft · v${nextVersion}`} tokens={draftTokens} />
           </div>
 
-          {blockers.length > 0 ? (
+          {failures.length > 0 ? (
             <Alert
               tone="fail"
               title={
-                blockers.length === 1
-                  ? 'One contrast problem must be fixed first'
-                  : `${blockers.length} contrast problems must be fixed first`
+                failures.length === 1
+                  ? 'One pair will be hard to read in the app'
+                  : `${failures.length} pairs will be hard to read in the app`
               }
             >
-              <ul className="mt-1.5 flex flex-col gap-1">
-                {blockers.map((blocker) => (
-                  <li key={blocker.pairId} className="text-11-5 leading-[1.45] text-fail-body">
-                    <span className="font-medium">
-                      {blocker.label} · {blocker.ratio.toFixed(1)}:1
-                    </span>{' '}
-                    — {blocker.message}
-                  </li>
-                ))}
-              </ul>
+              <IssueList
+                issues={failures}
+                tone="fail"
+                acknowledged={acknowledged}
+                onToggle={toggle}
+              />
             </Alert>
           ) : null}
 
@@ -187,27 +190,12 @@ export function PublishModal({
                   : `${warnings.length} pairs are readable but low-contrast`
               }
             >
-              <div className="mt-2 flex flex-col gap-2">
-                {warnings.map((warning) => (
-                  <label
-                    key={warning.pairId}
-                    className="flex cursor-pointer items-start gap-2 text-11-5 leading-[1.45] text-warn-body"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={acknowledged.has(warning.pairId)}
-                      onChange={() => toggle(warning.pairId)}
-                      className="focus-ring mt-[2px] h-3.5 w-3.5 flex-none accent-warn-icon"
-                    />
-                    <span>
-                      <span className="font-medium text-warn-title">
-                        {warning.label} · {warning.ratio.toFixed(1)}:1
-                      </span>{' '}
-                      — {warning.message} Publish anyway.
-                    </span>
-                  </label>
-                ))}
-              </div>
+              <IssueList
+                issues={warnings}
+                tone="warn"
+                acknowledged={acknowledged}
+                onToggle={toggle}
+              />
             </Alert>
           ) : null}
 
@@ -254,18 +242,65 @@ export function PublishModal({
               onClick={() => onPublish([...acknowledged])}
               disabled={!canPublish}
               title={
-                blockers.length > 0
-                  ? 'Fix the contrast problems above before publishing'
-                  : unacknowledged.length > 0
-                    ? 'Confirm the warnings above before publishing'
-                    : undefined
+                unacknowledged.length > 0
+                  ? 'Confirm the contrast problems above before publishing'
+                  : undefined
               }
             >
-              {publishing ? 'Publishing…' : 'Publish now'}
+              {publishing ? 'Publishing…' : issues.length > 0 ? 'Publish anyway' : 'Publish now'}
             </Button>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * One tickable row per failing pair.
+ *
+ * The tick is the whole gate, so it says what it costs — "publish anyway" after
+ * the consequence, not a bare checkbox next to a ratio. Acknowledgement is by
+ * pair id and is re-checked server-side, so ticking here is a statement about
+ * this specific problem rather than a blanket override.
+ */
+function IssueList({
+  issues,
+  tone,
+  acknowledged,
+  onToggle,
+}: {
+  issues: ContrastResult[];
+  tone: 'warn' | 'fail';
+  acknowledged: Set<string>;
+  onToggle: (pairId: string) => void;
+}) {
+  const styles =
+    tone === 'fail'
+      ? { body: 'text-fail-body', title: 'text-fail-title', box: 'accent-fail-icon' }
+      : { body: 'text-warn-body', title: 'text-warn-title', box: 'accent-warn-icon' };
+
+  return (
+    <div className="mt-2 flex flex-col gap-2">
+      {issues.map((issue) => (
+        <label
+          key={issue.pairId}
+          className={`flex cursor-pointer items-start gap-2 text-11-5 leading-[1.45] ${styles.body}`}
+        >
+          <input
+            type="checkbox"
+            checked={acknowledged.has(issue.pairId)}
+            onChange={() => onToggle(issue.pairId)}
+            className={`focus-ring mt-[2px] h-3.5 w-3.5 flex-none ${styles.box}`}
+          />
+          <span>
+            <span className={`font-medium ${styles.title}`}>
+              {issue.label} · {issue.ratio.toFixed(1)}:1
+            </span>{' '}
+            — {issue.message} Publish anyway.
+          </span>
+        </label>
+      ))}
     </div>
   );
 }

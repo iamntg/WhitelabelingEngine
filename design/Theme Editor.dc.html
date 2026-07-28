@@ -278,14 +278,25 @@
                   <div style="position: relative; width: 30px; height: 30px; border-radius: 50%; background: {{ t.tint }}; display: flex; align-items: center; justify-content: center; font-family: 'Material Symbols Rounded'; font-size: 16px; line-height: 1; color: {{ t.primary }};">notifications<span style="position: absolute; top: -1px; right: -1px; width: 9px; height: 9px; border-radius: 50%; background: {{ t.accent }}; border: 2px solid {{ t.bg }};"></span></div>
                 </div>
 
-                <div style="padding: 0 20px;">
-                  <div style="position: relative; height: 148px; border-radius: {{ t.radius }}; background-color: {{ t.placeholder }}; background-image: repeating-linear-gradient(135deg, rgba(127,127,127,0.14) 0 6px, transparent 6px 12px); display: flex; align-items: flex-end; padding: 12px;">
-                    <span style="position: absolute; top: 12px; left: 12px; padding: 5px 9px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; background: {{ t.accent }}; color: {{ t.accentInk }}; border-radius: {{ t.pill }};">Tuesday · 2 for 1 pasta</span>
-                    <span style="font-family: ui-monospace, monospace; font-size: 10px; color: {{ t.placeholderInk }}; background: {{ t.placeholderChip }}; padding: 3px 6px; border-radius: 4px;">hero image 1200×800</span>
+                <div style="flex: 0 0 auto; overflow: hidden;">
+                  <div style="display: flex; gap: 10px; padding: 0 20px; transform: translateX({{ carouselShift }}); transition: transform 320ms cubic-bezier(0.4, 0.1, 0.2, 1);">
+                    <sc-for list="{{ hero }}" as="h" hint-placeholder-count="3">
+                      <div style="position: relative; flex: 0 0 288px; height: 152px; border-radius: {{ t.radius }}; overflow: hidden; background-color: {{ t.placeholder }}; background-image: repeating-linear-gradient(135deg, rgba(127,127,127,0.14) 0 6px, transparent 6px 12px); display: flex; align-items: flex-end; padding: 11px 12px 12px; opacity: {{ h.opacity }}; transition: opacity 240ms;">
+                        <span style="position: absolute; top: 12px; left: 12px; padding: 5px 9px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; background: {{ h.badgeBg }}; color: {{ h.badgeFg }}; border-radius: {{ t.pill }};">{{ h.badge }}</span>
+                        <span style="font-family: ui-monospace, monospace; font-size: 10px; color: {{ t.placeholderInk }}; background: {{ t.placeholderChip }}; padding: 3px 6px; border-radius: 4px;">{{ h.slug }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; align-items: center; justify-content: center; margin-top: 3px;">
+                    <sc-for list="{{ heroDots }}" as="d" hint-placeholder-count="3">
+                      <button onClick="{{ d.onClick }}" aria-label="{{ d.label }}" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: none; border: none; padding: 0; cursor: pointer;">
+                        <span style="display: block; width: {{ d.w }}; height: 5px; border-radius: 3px; background: {{ d.bg }}; transition: width 200ms, background 200ms;"></span>
+                      </button>
+                    </sc-for>
                   </div>
                 </div>
 
-                <div style="padding: 14px 20px 0;">
+                <div style="flex: 0 0 auto; padding: 14px 20px 0;">
                   <div style="font-family: {{ t.headFont }}; font-size: 21px; font-weight: 600; letter-spacing: -0.02em; color: {{ t.ink }}; line-height: 1.2;">Kitchen’s open until 10</div>
                   <div style="font-size: 12.5px; color: {{ t.muted }}; margin-top: 4px;">Pickup in ~18 min · 214 Kestrel Ave</div>
                   <div style="display: flex; gap: 8px; margin-top: 12px;">
@@ -294,20 +305,26 @@
                   </div>
                 </div>
 
-                <div style="padding: 18px 20px 0;">
+                <div style="flex: 1; min-height: 0; overflow: hidden; padding: 16px 20px 0;">
                   <div style="display: flex; align-items: baseline; justify-content: space-between;">
                     <span style="font-family: {{ t.headFont }}; font-size: 14px; font-weight: 600; color: {{ t.ink }};">Popular this week</span>
                     <span style="font-size: 12px; font-weight: 500; color: {{ t.secondary }};">See menu</span>
                   </div>
-                  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 11px;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 11px;">
                     <sc-for list="{{ popular }}" as="i" hint-placeholder-count="2">
-                      <div style="display: flex; gap: 11px; align-items: center;">
-                        <div style="width: 56px; height: 56px; flex: 0 0 56px; border-radius: {{ t.radius }}; background-color: {{ t.placeholder }}; background-image: repeating-linear-gradient(135deg, rgba(127,127,127,0.15) 0 5px, transparent 5px 10px);"></div>
-                        <div style="flex: 1; min-width: 0;">
-                          <div style="font-size: 13.5px; font-weight: 600; color: {{ t.ink }};">{{ i.name }}</div>
-                          <div style="font-size: 11.5px; color: {{ t.muted }}; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ i.desc }}</div>
+                      <div style="border: 1px solid {{ t.hair }}; border-radius: {{ t.radius }}; overflow: hidden; background: {{ t.bg }};">
+                        <div style="position: relative; height: 78px; background-color: {{ t.placeholder }}; background-image: repeating-linear-gradient(135deg, rgba(127,127,127,0.15) 0 5px, transparent 5px 10px);">
+                          <sc-if value="{{ i.hasTag }}" hint-placeholder-val="{{ true }}">
+                            <span style="position: absolute; top: 7px; left: 7px; padding: 3px 6px; font-size: 8.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; background: {{ t.accent }}; color: {{ t.accentInk }}; border-radius: {{ t.pill }};">{{ i.tag }}</span>
+                          </sc-if>
                         </div>
-                        <div style="font-size: 13px; font-weight: 600; color: {{ t.ink }};">{{ i.price }}</div>
+                        <div style="padding: 9px 10px 10px;">
+                          <div style="font-size: 12.5px; font-weight: 600; color: {{ t.ink }}; line-height: 1.25; height: 31px; overflow: hidden;">{{ i.name }}</div>
+                          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 7px;">
+                            <span style="font-size: 12.5px; font-weight: 600; color: {{ t.ink }};">{{ i.price }}</span>
+                            <span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: {{ t.pill }}; background: {{ btn.bg }}; color: {{ btn.fg }}; border: 1px solid {{ btn.border }}; font-family: 'Material Symbols Rounded'; font-size: 15px; line-height: 1;">add</span>
+                          </div>
+                        </div>
                       </div>
                     </sc-for>
                   </div>
@@ -620,6 +637,7 @@ class Component extends DCLogic {
     changes: 6,
     mode: 'light',
     typeOpen: false,
+    heroIndex: 0,
     sample: 'Ash-Roasted Half Chicken',
     publishOpen: false,
     published: false
@@ -650,6 +668,10 @@ class Component extends DCLogic {
 
   set(k, v) { this.setState(s => ({ theme: Object.assign({}, s.theme, { [k]: v }), changes: s.changes + 1 })); }
   toggleSection(k) { this.setState(s => ({ open: Object.assign({}, s.open, { [k]: !s.open[k] }) })); }
+
+  goHero0 = () => this.setState({ heroIndex: 0 });
+  goHero1 = () => this.setState({ heroIndex: 1 });
+  goHero2 = () => this.setState({ heroIndex: 2 });
 
   pickLogo = () => {
     const input = document.createElement('input');
@@ -690,20 +712,21 @@ class Component extends DCLogic {
                                 { bg: primary, fg: readable(primary), border: primary };
 
     const guard = this.props.showGuardrails ?? true;
-    const accentRatio = ratio(accentC, surface);
-    const primaryRatio = ratio(primary, surface);
+    const accentRatio = ratio(th.accent, th.background);
+    const primaryRatio = ratio(th.primary, th.background);
+    const modeNote = dark ? ' — in light mode' : '';
     let warn = { show: false };
     if (guard && accentRatio < 3) {
       warn = {
         show: true,
-        title: 'Accent on background: ' + accentRatio.toFixed(1) + ':1' + (dark ? ' (dark mode)' : ''),
+        title: 'Accent on background: ' + accentRatio.toFixed(1) + ':1' + modeNote,
         body: 'Prices and labels in this color will be hard to read. Needs at least 3:1.',
         fix: () => this.set('accent', darkenUntil(th.accent, th.background, 3.2))
       };
     } else if (guard && primaryRatio < 3) {
       warn = {
         show: true,
-        title: 'Primary on background: ' + primaryRatio.toFixed(1) + ':1',
+        title: 'Primary on background: ' + primaryRatio.toFixed(1) + ':1' + modeNote,
         body: 'Buttons in this color will blend into the page. Needs at least 3:1.',
         fix: () => this.set('primary', darkenUntil(th.primary, th.background, 3.2))
       };
@@ -845,9 +868,37 @@ class Component extends DCLogic {
       frameLabel: dark ? 'iPhone 15 · 393 × 852 · dark' : 'iPhone 15 · 393 × 852 · light',
 
       popular: [
-        { name: 'Ash-Roasted Half Chicken', desc: 'Charred lemon, salsa verde', price: '$26.00' },
-        { name: 'Bucatini Cacio e Pepe', desc: 'Tellicherry pepper, pecorino', price: '$21.00' }
+        { name: 'Ash-Roasted Half Chicken', price: '$26.00', tag: "Chef’s pick", hasTag: true },
+        { name: 'Bucatini Cacio e Pepe', price: '$21.00', hasTag: false },
+        { name: 'Little Gem Caesar', price: '$13.00', hasTag: false },
+        { name: 'Olive Oil Cake', price: '$10.00', tag: 'New', hasTag: true }
       ],
+      hero: [
+        { slug: 'hero 1200×800', badge: 'Tuesday · 2 for 1 pasta' },
+        { slug: 'hero 1200×800', badge: 'Wood oven nights' },
+        { slug: 'hero 1200×800', badge: 'Sunday brunch · 10–2' }
+      ].map((h, i) => ({
+        slug: h.slug, badge: h.badge,
+        opacity: i === this.state.heroIndex ? 1 : 0.55,
+        badgeBg: i === this.state.heroIndex ? accentC : mix(accentC, surface, 0.55),
+        badgeFg: readable(i === this.state.heroIndex ? accentC : mix(accentC, surface, 0.55))
+      })),
+      carouselShift: (() => {
+        const SLIDE = 288, GAP = 10, PAD = 20, FRAME = 372, N = 3;
+        const track = N * SLIDE + (N - 1) * GAP + PAD * 2;
+        const max = Math.max(0, track - FRAME);
+        return -Math.min(Math.max(0, this.state.heroIndex * (SLIDE + GAP) - 22), max) + 'px';
+      })(),
+      heroDots: [
+        { i: 0, onClick: this.goHero0 },
+        { i: 1, onClick: this.goHero1 },
+        { i: 2, onClick: this.goHero2 }
+      ].map(d => ({
+        onClick: d.onClick,
+        label: 'Slide ' + (d.i + 1),
+        w: d.i === this.state.heroIndex ? '16px' : '5px',
+        bg: d.i === this.state.heroIndex ? primary : hair
+      })),
       loyalty: 'Earn 34 points with this order',
       categories: [
         { id: 'small', name: 'Small plates' }, { id: 'wood', name: 'Wood oven' },

@@ -198,9 +198,9 @@ describe('resolveTheme — button styles', () => {
     // deliberately does not correct that, because the owner chose both colours
     // and a warning is actionable. So the invariant that matters is the
     // agreement between the two halves of this package: every primary the
-    // resolver cannot render legibly must be one the contrast engine refuses to
-    // publish. If that ever drifts, a customer ships an app with invisible
-    // buttons and nothing warned them.
+    // resolver cannot render legibly must be one the contrast engine raises as
+    // a failure the owner has to confirm. If that ever drifts, a customer ships
+    // an app with invisible buttons and nothing said a word.
     let blockedCount = 0;
     let legibleCount = 0;
 
@@ -213,8 +213,8 @@ describe('resolveTheme — button styles', () => {
         legibleCount++;
       } else {
         expect(
-          validateForPublish(t).blockers.map((b) => b.pairId),
-          `primary=${primary} renders at ${ratio.toFixed(2)}:1 but nothing blocked publish`,
+          validateForPublish(t).failures.map((f) => f.pairId),
+          `primary=${primary} renders at ${ratio.toFixed(2)}:1 but publish never asked about it`,
         ).toContain('primary-on-background');
         blockedCount++;
       }

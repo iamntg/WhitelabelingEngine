@@ -1,4 +1,5 @@
 import type { ResolvedTheme } from '@wl/theme';
+import { HeroArt, ItemArt } from './illustrations.jsx';
 import { bodyText, placeholderSurface, radius } from './theme-style.js';
 
 /**
@@ -77,8 +78,15 @@ export function MiniPhone({ theme, dimmed = false }: { theme: ResolvedTheme; dim
           marginTop: '10px',
           borderRadius: radius(theme.radius.md),
           position: 'relative',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: theme.placeholder.ink,
         }}
       >
+        {/* No content here, so the generic frame rather than a vertical scene. */}
+        <HeroArt size={44} />
         <span
           style={{
             position: 'absolute',
@@ -157,8 +165,14 @@ export function MiniPhone({ theme, dimmed = false }: { theme: ResolvedTheme; dim
             width: '30px',
             height: '30px',
             borderRadius: radius(theme.radius.md),
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: theme.placeholder.ink,
           }}
-        />
+        >
+          <ItemArt size={19} />
+        </span>
         <span
           style={{
             flex: 1,
