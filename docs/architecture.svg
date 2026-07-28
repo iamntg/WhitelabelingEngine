@@ -1,0 +1,271 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 788" width="1240" height="788" role="img" aria-labelledby="wl-title wl-desc" text-rendering="geometricPrecision">
+  <title id="wl-title">Whitelabeling Engine architecture</title>
+  <desc id="wl-desc">A business onboards once and gets four branded surfaces. This repository holds the engine behind them: an admin tool where the owner authors a theme, an API that validates and publishes it into immutable versions backed by Postgres, and an Expo app that fetches and renders the published theme. Three shared packages — the token contract, the component set and the wire contract — are consumed unchanged by all of them.</desc>
+
+  <style>
+    :root {
+      --canvas:       #ffffff;
+      --band-ctx:     #fafaf9;
+      --band-repo:    #ffffff;
+      --card:         #ffffff;
+      --card-alt:     #f5f5f4;
+      --border:       #e7e5e4;
+      --border-soft:  #ebe9e7;
+      --border-firm:  #d6d3d1;
+      --ink:          #1c1917;
+      --ink-2:        #57534e;
+      --ink-3:        #857f7a;
+      --accent:       #0f766e;
+      --accent-soft:  #f0fdfa;
+      --accent-line:  #99f6e4;
+      --wire:         #a8a29e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --canvas:       #0d1117;
+        --band-ctx:     #11161d;
+        --band-repo:    #0f141a;
+        --card:         #161b22;
+        --card-alt:     #1b222b;
+        --border:       #272e38;
+        --border-soft:  #222932;
+        --border-firm:  #363d47;
+        --ink:          #e6edf3;
+        --ink-2:        #b3bbc4;
+        --ink-3:        #8b949e;
+        --accent:       #2dd4bf;
+        --accent-soft:  #0d2b28;
+        --accent-line:  #17564e;
+        --wire:         #525a65;
+      }
+    }
+
+    .bg          { fill: var(--canvas); }
+    .band-ctx    { fill: var(--band-ctx);  stroke: var(--border); stroke-width: 1.25; stroke-dasharray: 5 4; }
+    .band-repo   { fill: var(--band-repo); stroke: var(--border-firm); stroke-width: 1.5; }
+    .card        { fill: var(--card);      stroke: var(--border); stroke-width: 1.25; }
+    .card-sm     { fill: var(--card);      stroke: var(--border); stroke-width: 1.25; }
+    .strip       { fill: var(--card-alt);  stroke: none; }
+    .pill        { fill: var(--accent-soft); stroke: var(--accent-line); stroke-width: 1.25; }
+    .chip        { fill: none; stroke: var(--border-firm); stroke-width: 1; }
+    .rule        { stroke: var(--border-soft); stroke-width: 1; }
+    .spine       { stroke: var(--accent-line); stroke-width: 1.5; stroke-dasharray: 2 5; stroke-linecap: round; }
+    .wire        { stroke: var(--wire); stroke-width: 1.5; }
+    .wire-a      { stroke: var(--accent); stroke-width: 1.5; }
+    .dot         { fill: var(--accent); opacity: .55; }
+
+    text         { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; }
+    .mono        { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+
+    .eyebrow     { font-size: 10.5px; font-weight: 600; letter-spacing: 1.7px; fill: var(--ink-3); }
+    .eyebrow-a   { font-size: 10.5px; font-weight: 600; letter-spacing: 1.7px; fill: var(--accent); }
+    .h1          { font-size: 16px;   font-weight: 600; fill: var(--ink); }
+    .lede        { font-size: 12.5px; font-weight: 400; fill: var(--ink-2); }
+    .h2          { font-size: 14.5px; font-weight: 600; fill: var(--ink); }
+    .path        { font-size: 10.5px; font-weight: 500; fill: var(--ink-3); letter-spacing: .2px; }
+    .stack       { font-size: 10.5px; font-weight: 400; fill: var(--ink-3); }
+    .bullet      { font-size: 11px;   font-weight: 400; fill: var(--ink-2); }
+    .pkg         { font-size: 13px;   font-weight: 600; fill: var(--accent); }
+    .role        { font-size: 11.5px; font-weight: 400; fill: var(--ink-2); }
+    .card-t      { font-size: 12.5px; font-weight: 600; fill: var(--ink); }
+    .card-s      { font-size: 10.5px; font-weight: 400; fill: var(--ink-3); }
+    .wire-t      { font-size: 10.5px; font-weight: 500; fill: var(--ink-2); }
+    .wire-s      { font-size: 9.5px;  font-weight: 400; fill: var(--ink-3); }
+    .strip-t     { font-size: 9.5px;  font-weight: 400; fill: var(--ink-2); }
+    .chip-t      { font-size: 9px;    font-weight: 500; fill: var(--ink-2); }
+    .used        { font-size: 9.5px;  font-weight: 400; fill: var(--ink-3); }
+    .pill-a      { font-size: 10px;   font-weight: 700; letter-spacing: 1.5px; fill: var(--accent); }
+    .pill-b      { font-size: 10px;   font-weight: 400; letter-spacing: .2px;  fill: var(--ink-2); }
+  </style>
+
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--wire)"/>
+    </marker>
+    <marker id="arw-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1240" height="788"/>
+
+  <!-- ────────────────────────  THE PLATFORM (context)  ──────────────────────── -->
+  <rect class="band-ctx" x="32" y="32" width="1176" height="132" rx="14"/>
+
+  <text class="eyebrow" x="58" y="66">THE PLATFORM</text>
+  <text class="h1"      x="58" y="92">One onboarding, four branded surfaces</text>
+  <text class="lede"    x="58" y="114">A small business signs up once. Everything their</text>
+  <text class="lede"    x="58" y="132">customers and their staff touch is theirs.</text>
+
+  <g>
+    <rect class="card-sm" x="446" y="66" width="176" height="64" rx="10"/>
+    <text class="card-t" x="462" y="93">Storefront web</text>
+    <text class="card-s" x="462" y="112">browse · order · pay</text>
+  </g>
+  <g>
+    <rect class="card-sm" x="636" y="66" width="176" height="64" rx="10"/>
+    <text class="card-t" x="652" y="93">Customer app</text>
+    <text class="card-s" x="652" y="112">iOS · Android</text>
+  </g>
+  <g>
+    <rect class="card-sm" x="826" y="66" width="176" height="64" rx="10"/>
+    <text class="card-t" x="842" y="93">Owner dashboard</text>
+    <text class="card-s" x="842" y="112">run the business</text>
+  </g>
+  <g>
+    <rect class="card-sm" x="1016" y="66" width="176" height="64" rx="10"/>
+    <text class="card-t" x="1032" y="93">Order manager</text>
+    <text class="card-s" x="1032" y="112">the live order queue</text>
+  </g>
+
+  <!-- connector -->
+  <line class="wire-a" x1="620" y1="164" x2="620" y2="192" marker-end="url(#arw-a)"/>
+  <text class="wire-t" x="638" y="184">all four read one published theme</text>
+
+  <!-- ────────────────────────  THIS REPOSITORY  ──────────────────────── -->
+  <rect class="band-repo" x="32" y="196" width="1176" height="560" rx="14"/>
+
+  <text class="eyebrow-a" x="58" y="232">THIS REPOSITORY · THE WHITELABELING ENGINE</text>
+  <text class="lede"      x="58" y="256">Where a brand is authored, validated, published — and served to every surface above.</text>
+
+  <!-- ── apps/web ── -->
+  <g>
+    <rect class="card" x="56" y="278" width="320" height="214" rx="12"/>
+    <text class="path mono" x="74" y="304">apps/web</text>
+    <text class="h2"        x="74" y="326">Admin tool</text>
+    <text class="stack"     x="74" y="346">Vite · React · TypeScript · Tailwind</text>
+    <line class="rule" x1="74" y1="360" x2="358" y2="360"/>
+
+    <circle class="dot" cx="78" cy="378" r="2.5"/>
+    <text class="bullet" x="90" y="382">Logo, 4 colours, font, corners, buttons</text>
+    <circle class="dot" cx="78" cy="400" r="2.5"/>
+    <text class="bullet" x="90" y="404">The preview is the app, in an iframe</text>
+    <circle class="dot" cx="78" cy="422" r="2.5"/>
+    <text class="bullet" x="90" y="426">Autosave draft, publish with a diff</text>
+    <circle class="dot" cx="78" cy="444" r="2.5"/>
+    <text class="bullet" x="90" y="448">Warns on contrast before it ships</text>
+  </g>
+
+  <!-- ── apps/api ── -->
+  <g>
+    <rect class="card" x="460" y="278" width="320" height="214" rx="12"/>
+    <text class="path mono" x="478" y="304">apps/api</text>
+    <text class="h2"        x="478" y="326">Control plane</text>
+    <text class="stack"     x="478" y="346">Fastify · Zod · Prisma · OpenAPI</text>
+    <line class="rule" x1="478" y1="360" x2="762" y2="360"/>
+
+    <circle class="dot" cx="482" cy="378" r="2.5"/>
+    <text class="bullet" x="494" y="382">Re-validates the stored draft on publish</text>
+    <circle class="dot" cx="482" cy="400" r="2.5"/>
+    <text class="bullet" x="494" y="404">Snapshots it into an immutable version</text>
+    <circle class="dot" cx="482" cy="422" r="2.5"/>
+    <text class="bullet" x="494" y="426">Rollback republishes forward, no deletes</text>
+
+    <rect class="strip" x="474" y="446" width="292" height="30" rx="8"/>
+    <text class="strip-t mono" x="488" y="465">Postgres · mutable draft · append-only versions</text>
+  </g>
+
+  <!-- ── apps/mobile ── -->
+  <g>
+    <rect class="card" x="864" y="278" width="320" height="214" rx="12"/>
+    <text class="path mono" x="882" y="304">apps/mobile</text>
+    <text class="h2"        x="882" y="326">The branded app</text>
+    <text class="stack"     x="882" y="346">Expo · React Native · react-native-svg</text>
+    <line class="rule" x1="882" y1="360" x2="1166" y2="360"/>
+
+    <circle class="dot" cx="886" cy="378" r="2.5"/>
+    <text class="bullet" x="898" y="382">Fetches the live theme by tenant slug</text>
+    <circle class="dot" cx="886" cy="400" r="2.5"/>
+    <text class="bullet" x="898" y="404">Caches theme + content for offline open</text>
+    <circle class="dot" cx="886" cy="422" r="2.5"/>
+    <text class="bullet" x="898" y="426">resolveTheme(), then renders @wl/ui</text>
+    <circle class="dot" cx="886" cy="444" r="2.5"/>
+    <text class="bullet" x="898" y="448">Runs in a browser too, for debugging</text>
+  </g>
+
+  <!-- ── web → api ── -->
+  <text class="wire-t" x="418" y="344" text-anchor="middle">PATCH draft</text>
+  <text class="wire-t" x="418" y="358" text-anchor="middle">POST publish</text>
+  <line class="wire" x1="384" y1="378" x2="450" y2="378" marker-end="url(#arw)"/>
+  <text class="wire-s" x="418" y="398" text-anchor="middle">Bearer JWT</text>
+  <text class="wire-s" x="418" y="411" text-anchor="middle">+ membership</text>
+
+  <!-- ── api → mobile ── -->
+  <text class="wire-t mono" x="822" y="344" text-anchor="middle">GET public</text>
+  <text class="wire-s"      x="822" y="358" text-anchor="middle">theme + content</text>
+  <line class="wire" x1="788" y1="378" x2="854" y2="378" marker-end="url(#arw)"/>
+  <text class="wire-s" x="822" y="398" text-anchor="middle">ETag · SWR</text>
+  <text class="wire-s" x="822" y="411" text-anchor="middle">no auth</text>
+
+  <!-- ────────────────────────  SHARED SPINE  ──────────────────────── -->
+  <line class="spine" x1="56" y1="520" x2="1184" y2="520"/>
+  <rect class="pill" x="56" y="508" width="322" height="24" rx="12"/>
+  <text x="74" y="524.5"><tspan class="pill-a">SHARED CONTRACTS</tspan><tspan class="pill-b" dx="8">one definition, every consumer</tspan></text>
+
+  <!-- ── @wl/theme ── -->
+  <g>
+    <rect class="card" x="56" y="548" width="360" height="176" rx="12"/>
+    <text class="pkg mono" x="74" y="576">@wl/theme</text>
+    <text class="role"     x="74" y="596">The token contract</text>
+    <line class="rule" x1="74" y1="610" x2="398" y2="610"/>
+
+    <circle class="dot" cx="78" cy="630" r="2.5"/>
+    <text class="bullet" x="90" y="634">The owner's tokens — and nothing else</text>
+    <circle class="dot" cx="78" cy="650" r="2.5"/>
+    <text class="bullet" x="90" y="654">resolveTheme() derives the rest, in OKLCH</text>
+    <circle class="dot" cx="78" cy="670" r="2.5"/>
+    <text class="bullet" x="90" y="674">Runs identically in a browser, Node and Hermes</text>
+
+    <text class="used" x="74" y="700">used by</text>
+    <rect class="chip" x="122" y="686" width="60" height="20" rx="6"/>
+    <text class="chip-t mono" x="152" y="700" text-anchor="middle">apps/web</text>
+    <rect class="chip" x="188" y="686" width="76" height="20" rx="6"/>
+    <text class="chip-t mono" x="226" y="700" text-anchor="middle">apps/mobile</text>
+    <rect class="chip" x="270" y="686" width="60" height="20" rx="6"/>
+    <text class="chip-t mono" x="300" y="700" text-anchor="middle">apps/api</text>
+  </g>
+
+  <!-- ── @wl/ui ── -->
+  <g>
+    <rect class="card" x="440" y="548" width="360" height="176" rx="12"/>
+    <text class="pkg mono" x="458" y="576">@wl/ui</text>
+    <text class="role"     x="458" y="596">The app's components</text>
+    <line class="rule" x1="458" y1="610" x2="782" y2="610"/>
+
+    <circle class="dot" cx="462" cy="630" r="2.5"/>
+    <text class="bullet" x="474" y="634">Written against React Native, not the DOM</text>
+    <circle class="dot" cx="462" cy="650" r="2.5"/>
+    <text class="bullet" x="474" y="654">Expo renders them; the preview mounts the same</text>
+    <circle class="dot" cx="462" cy="670" r="2.5"/>
+    <text class="bullet" x="474" y="674">Props are content and variants, never colours</text>
+
+    <text class="used" x="458" y="700">used by</text>
+    <rect class="chip" x="506" y="686" width="60" height="20" rx="6"/>
+    <text class="chip-t mono" x="536" y="700" text-anchor="middle">apps/web</text>
+    <rect class="chip" x="572" y="686" width="76" height="20" rx="6"/>
+    <text class="chip-t mono" x="610" y="700" text-anchor="middle">apps/mobile</text>
+  </g>
+
+  <!-- ── @wl/api-client ── -->
+  <g>
+    <rect class="card" x="824" y="548" width="360" height="176" rx="12"/>
+    <text class="pkg mono" x="842" y="576">@wl/api-client</text>
+    <text class="role"     x="842" y="596">The wire contract</text>
+    <line class="rule" x1="842" y1="610" x2="1166" y2="610"/>
+
+    <circle class="dot" cx="846" cy="630" r="2.5"/>
+    <text class="bullet" x="858" y="634">Zod schemas for every request and response</text>
+    <circle class="dot" cx="846" cy="650" r="2.5"/>
+    <text class="bullet" x="858" y="654">The server validates what the clients parse</text>
+    <circle class="dot" cx="846" cy="670" r="2.5"/>
+    <text class="bullet" x="858" y="674">One typed fetch client, shared by both</text>
+
+    <text class="used" x="842" y="700">used by</text>
+    <rect class="chip" x="890" y="686" width="60" height="20" rx="6"/>
+    <text class="chip-t mono" x="920" y="700" text-anchor="middle">apps/web</text>
+    <rect class="chip" x="956" y="686" width="76" height="20" rx="6"/>
+    <text class="chip-t mono" x="994" y="700" text-anchor="middle">apps/mobile</text>
+    <rect class="chip" x="1038" y="686" width="60" height="20" rx="6"/>
+    <text class="chip-t mono" x="1068" y="700" text-anchor="middle">apps/api</text>
+  </g>
+</svg>
