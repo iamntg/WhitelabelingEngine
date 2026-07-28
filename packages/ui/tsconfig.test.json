@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    /**
+     * The tests get the DOM lib; `tsconfig.json` deliberately does not.
+     *
+     * The rule for this package is that a component must be able to render on a
+     * device, which means no DOM globals in `src` — and the surest way to
+     * enforce that is for the compiler not to know what `document` is. The
+     * tests mount through react-native-web into jsdom, so they genuinely do
+     * read attributes off elements, and putting them under the same config
+     * would have meant handing `src` the DOM to keep them compiling.
+     */
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  },
+  "include": ["test/**/*.ts", "test/**/*.tsx"]
+}

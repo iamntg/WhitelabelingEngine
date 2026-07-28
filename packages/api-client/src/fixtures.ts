@@ -1,12 +1,20 @@
-import { SampleContent } from '@wl/api-client';
+import { SampleContent } from './schemas/content.js';
 
 /**
- * Preview content fixtures for tests.
+ * Sample content fixtures for tests.
  *
  * These are the API's own seed payloads, re-validated through `SampleContent`
- * here so the preview is tested against exactly the shape the phone receives —
+ * here so consumers are tested against exactly the shape the phone receives —
  * not against a convenient stand-in that could pass while the real payload
  * fails.
+ *
+ * They live beside the schema that validates them because two packages now
+ * need them: `@wl/ui` tests the screens, and `@wl/web` tests the preview that
+ * mounts those screens. Keeping a copy in each is how the two would end up
+ * asserting against different menus.
+ *
+ * Reached through the `@wl/api-client/fixtures` subpath rather than the package
+ * root, so 250 lines of test data stay out of the admin app's bundle.
  */
 
 const usd = (amount: number) => ({ amount, currency: 'USD' });

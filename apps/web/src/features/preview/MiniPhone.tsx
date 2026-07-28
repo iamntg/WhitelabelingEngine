@@ -1,6 +1,6 @@
 import type { ResolvedTheme } from '@wl/theme';
-import { HeroArt, ItemArt } from './illustrations.jsx';
-import { bodyText, placeholderSurface, radius } from './theme-style.js';
+import { HeroArt, ItemArt } from '@wl/ui';
+import type { CSSProperties } from 'react';
 
 /**
  * The compact phone used in the publish modal's before/after.
@@ -13,7 +13,33 @@ import { bodyText, placeholderSurface, radius } from './theme-style.js';
  *
  * It renders through the same `ResolvedTheme` as the full preview, so it cannot
  * disagree with it about what a token produces.
+ *
+ * Deliberately the last piece of hand-styled DOM that draws a theme. It is not
+ * the phone — it is a diagram of one, sized for a modal — so it belongs to the
+ * admin tool rather than to `@wl/ui`, and it is not bound by that package's
+ * rule that a component must be able to render on a device. The illustrations
+ * still come from `@wl/ui`, because there is no reason for two of those.
  */
+
+/** Radii above the pill threshold are capped so CSS does not print "999px". */
+const radius = (value: number): string => (value >= 999 ? '9999px' : `${value}px`);
+
+/** Body type tokens as CSS. The only such helper the admin tool still needs. */
+function bodyText(
+  theme: ResolvedTheme,
+  size: keyof ResolvedTheme['typography']['body']['sizes'],
+  options: { weight?: keyof ResolvedTheme['typography']['body']['weights']; color?: string } = {},
+): CSSProperties {
+  const { body } = theme.typography;
+  return {
+    fontFamily: body.fontFamily,
+    fontWeight: body.weights[options.weight ?? 'regular'],
+    fontSize: `${body.sizes[size]}px`,
+    lineHeight: body.lineHeight,
+    color: options.color ?? theme.text.primary,
+  };
+}
+
 export function MiniPhone({ theme, dimmed = false }: { theme: ResolvedTheme; dimmed?: boolean }) {
   return (
     <div
@@ -73,7 +99,7 @@ export function MiniPhone({ theme, dimmed = false }: { theme: ResolvedTheme; dim
 
       <div
         style={{
-          ...placeholderSurface(theme),
+          backgroundColor: theme.placeholder.fill,
           height: '76px',
           marginTop: '10px',
           borderRadius: radius(theme.radius.md),
@@ -86,7 +112,7 @@ export function MiniPhone({ theme, dimmed = false }: { theme: ResolvedTheme; dim
         }}
       >
         {/* No content here, so the generic frame rather than a vertical scene. */}
-        <HeroArt size={44} />
+        <HeroArt size={44} color={theme.placeholder.ink} />
         <span
           style={{
             position: 'absolute',
@@ -161,7 +187,7 @@ export function MiniPhone({ theme, dimmed = false }: { theme: ResolvedTheme; dim
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
         <span
           style={{
-            ...placeholderSurface(theme),
+            backgroundColor: theme.placeholder.fill,
             width: '30px',
             height: '30px',
             borderRadius: radius(theme.radius.md),
@@ -171,7 +197,7 @@ export function MiniPhone({ theme, dimmed = false }: { theme: ResolvedTheme; dim
             color: theme.placeholder.ink,
           }}
         >
-          <ItemArt size={19} />
+          <ItemArt size={19} color={theme.placeholder.ink} />
         </span>
         <span
           style={{

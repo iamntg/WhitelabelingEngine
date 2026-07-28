@@ -9,14 +9,18 @@
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "preview:render": "tsx scripts/render-preview.tsx"
+    "preview:render": "vite-node scripts/render-preview.tsx",
+    "art:proof": "vite-node scripts/art-proof.tsx"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.7",
     "@wl/api-client": "workspace:*",
     "@wl/theme": "workspace:*",
+    "@wl/ui": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-native-svg": "15.2.0",
+    "react-native-web": "~0.19.10",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
@@ -25,10 +29,12 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "jsdom": "^25.0.1",
+    "react-native": "0.74.5",
     "tailwindcss": "^4.0.0",
     "tsx": "^4.23.1",
     "typescript": "^5.7.2",
     "vite": "^6.0.5",
+    "vite-node": "^3.2.4",
     "vitest": "^3.2.4"
   }
 }

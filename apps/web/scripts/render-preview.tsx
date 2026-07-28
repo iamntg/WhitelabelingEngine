@@ -1,22 +1,35 @@
 import { writeFile } from 'node:fs/promises';
-import React from 'react';
 import type { SampleContent } from '@wl/api-client';
-import { FONT_PAIRINGS, resolveTheme, type ThemeTokens } from '@wl/theme';
+import { FONT_PAIRINGS, PRESETS, resolveTheme, type ThemeTokens } from '@wl/theme';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { StyleSheet } from 'react-native';
 
-import { CatalogScreen } from '../src/features/preview/screens/CatalogScreen.jsx';
-import { CheckoutScreen } from '../src/features/preview/screens/CheckoutScreen.jsx';
-import { HomeScreen } from '../src/features/preview/screens/HomeScreen.jsx';
-import { ItemScreen } from '../src/features/preview/screens/ItemScreen.jsx';
-import { StatusBar, TabBar } from '../src/features/preview/screens/shared.jsx';
+import {
+  PhoneApp,
+  PHONE_CONTAINER_CSS,
+  type PreviewScreen,
+} from '../src/features/preview/PhoneApp.jsx';
+import { RESTAURANT, SALON, STUDIO } from '@wl/api-client/fixtures';
 
 /**
- * Renders every preview screen for every seeded brand, in both schemes, using
- * the live API's own tokens and content — then writes one static page.
+ * Renders every preview screen for every brand, in both schemes, then writes
+ * one static page.
  *
  * This exists so the preview can be inspected without a browser automation
- * stack, and so a reviewer can see all 24 combinations side by side rather than
- * clicking through them.
+ * stack, and so a reviewer sees all 24 combinations side by side rather than
+ * clicking through them. What it renders is `PhoneApp` — the same tree the
+ * admin tool mounts, which is the same `@wl/ui` components the Expo app builds
+ * from. A proof sheet drawn by its own code would prove nothing.
+ *
+ * With the API up it uses the live tokens and content. Without it, it falls
+ * back to the shipped presets and the test fixtures and says so on the page —
+ * the layout and the resolver are just as testable offline, and a proof sheet
+ * you cannot generate without Postgres running is a proof sheet nobody looks at.
+ *
+ * Run through vite-node, not tsx: it needs the `react-native` →
+ * `react-native-web` alias from vite.config.ts, without which the import
+ * resolves to React Native's Flow source and the script dies on the first line
+ * of `@wl/ui`.
  *
  * Usage: pnpm --filter @wl/web preview:render [outfile]
  */
@@ -24,19 +37,23 @@ import { StatusBar, TabBar } from '../src/features/preview/screens/shared.jsx';
 const API = process.env['API_BASE'] ?? 'http://localhost:4000';
 const AUTH = { authorization: `Bearer dev:${process.env['SEED_USER_ID'] ?? 'demo-user'}` };
 
-const SCREENS = [
-  ['Home', HomeScreen],
-  ['Catalog', CatalogScreen],
-  ['Detail', ItemScreen],
-  ['Checkout', CheckoutScreen],
-] as const;
-
-const ACTIVE_TAB: Record<string, string> = {
-  Home: 'home',
-  Catalog: 'catalog',
-  Detail: 'catalog',
-  Checkout: 'orders',
+const webStyleSheet = StyleSheet as unknown as {
+  getSheet: () => { id: string; textContent: string };
 };
+
+const SCREENS: Array<[label: string, screen: PreviewScreen]> = [
+  ['Home', 'home'],
+  ['Catalog', 'catalog'],
+  ['Detail', 'item'],
+  ['Checkout', 'checkout'],
+];
+
+interface Brand {
+  name: string;
+  vertical: string;
+  tokens: ThemeTokens;
+  content: SampleContent;
+}
 
 function fontsHref(): string {
   const weights = new Map<string, Set<number>>();
@@ -57,54 +74,92 @@ function fontsHref(): string {
   return `https://fonts.googleapis.com/css2?${families}&display=swap`;
 }
 
-async function main() {
+async function fromApi(): Promise<Brand[]> {
   const tenantsRes = await fetch(`${API}/v1/tenants`, { headers: AUTH });
   if (!tenantsRes.ok) throw new Error(`GET /v1/tenants → ${tenantsRes.status}`);
+
   const { tenants } = (await tenantsRes.json()) as {
     tenants: Array<{ id: string; slug: string; name: string; vertical: string }>;
   };
 
+  return Promise.all(
+    tenants.map(async (tenant) => {
+      const [draftRes, contentRes] = await Promise.all([
+        fetch(`${API}/v1/tenants/${tenant.id}/theme/draft`, { headers: AUTH }),
+        fetch(`${API}/public/v1/tenants/${tenant.slug}/content`),
+      ]);
+
+      const { tokens } = (await draftRes.json()) as { tokens: ThemeTokens };
+      const { content } = (await contentRes.json()) as { content: SampleContent };
+
+      return { name: tenant.name, vertical: tenant.vertical, tokens, content };
+    }),
+  );
+}
+
+/** One brand per vertical, from the shipped presets and the test fixtures. */
+function fromFixtures(): Brand[] {
+  const byVertical: Array<[SampleContent['vertical'], SampleContent]> = [
+    ['restaurant', RESTAURANT],
+    ['salon', SALON],
+    ['studio', STUDIO],
+  ];
+
+  return byVertical.map(([vertical, content]) => {
+    const preset = PRESETS.find((p) => p.vertical === vertical) ?? PRESETS[0];
+    if (!preset) throw new Error('No presets are registered');
+    return { name: preset.label, vertical, tokens: preset.tokens, content };
+  });
+}
+
+async function main() {
+  let brands: Brand[];
+  let source: string;
+
+  try {
+    brands = await fromApi();
+    source = `live API at ${API}`;
+  } catch (error) {
+    brands = fromFixtures();
+    source = `shipped presets and test fixtures — the API at ${API} was unreachable (${
+      error instanceof Error ? error.message : 'unknown error'
+    })`;
+  }
+
   const sections: string[] = [];
 
-  for (const tenant of tenants) {
-    const [draftRes, contentRes] = await Promise.all([
-      fetch(`${API}/v1/tenants/${tenant.id}/theme/draft`, { headers: AUTH }),
-      fetch(`${API}/public/v1/tenants/${tenant.slug}/content`),
-    ]);
-
-    const { tokens } = (await draftRes.json()) as { tokens: ThemeTokens };
-    const { content } = (await contentRes.json()) as { content: SampleContent };
-
+  for (const brand of brands) {
     for (const scheme of ['light', 'dark'] as const) {
-      const theme = resolveTheme(tokens, { scheme });
+      const theme = resolveTheme(brand.tokens, { scheme });
 
-      const phones = SCREENS.map(([name, Screen]) => {
-        const body = renderToStaticMarkup(<Screen theme={theme} content={content} />);
-        const status = renderToStaticMarkup(<StatusBar theme={theme} />);
-        const tabs = renderToStaticMarkup(
-          <TabBar theme={theme} content={content} activeTabId={ACTIVE_TAB[name] ?? 'home'} />,
+      const phones = SCREENS.map(([label, screen]) => {
+        const body = renderToStaticMarkup(
+          <PhoneApp theme={theme} content={brand.content} screen={screen} />,
         );
-
         return `<figure class="phone">
-  <div class="bezel"><div class="screen" style="background:${theme.surface.base};font-family:${theme.typography.body.fontFamily};color:${theme.text.primary}">
-    ${status}
-    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">${body}</div>
-    ${tabs}
-  </div></div>
-  <figcaption>${name}</figcaption>
+  <div class="bezel"><div class="screen">${body}</div></div>
+  <figcaption>${label}</figcaption>
 </figure>`;
       }).join('\n');
 
+      const swatch = (role: 'primary' | 'secondary' | 'accent') =>
+        `<span style="background:${theme[role].base}"></span>`;
+
       sections.push(`<section>
-  <h2>${tenant.name} <span class="meta">${tenant.vertical} · ${scheme} · ${theme.typography.display.family}/${theme.typography.body.family} · ${theme.meta.radiusScale} · ${theme.meta.buttonStyle}</span></h2>
+  <h2>${brand.name} <span class="meta">${brand.vertical} · ${scheme} · ${theme.typography.display.family}/${theme.typography.body.family} · ${theme.meta.radiusScale} · ${theme.meta.buttonStyle}</span></h2>
   <div class="swatches">
-    ${['primary', 'secondary', 'accent'].map((k) => `<span style="background:${(theme as unknown as Record<string, { base: string }>)[k]?.base}"></span>`).join('')}
-    <code>${tokens.colors.primary} ${tokens.colors.secondary} ${tokens.colors.accent} ${tokens.colors.background}</code>
+    ${swatch('primary')}${swatch('secondary')}${swatch('accent')}
+    <code>${brand.tokens.colors.primary} ${brand.tokens.colors.secondary} ${brand.tokens.colors.accent} ${brand.tokens.colors.background}</code>
   </div>
   <div class="row">${phones}</div>
 </section>`);
     }
   }
+
+  // Read after rendering: react-native-web registers rules as components
+  // render, so an empty sheet here would mean an unstyled page. This is the
+  // same handoff `PhoneFrame` performs into the preview iframe.
+  const { textContent } = webStyleSheet.getSheet();
 
   const html = `<!doctype html><html><head><meta charset="utf-8">
 <title>Theme preview — all brands, all screens</title>
@@ -112,7 +167,7 @@ async function main() {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="${fontsHref()}">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=block">
+<style>${textContent}</style>
 <style>
   *,*::before,*::after{box-sizing:border-box}
   body{margin:0;padding:28px;background:#f4f4f3;color:#18181a;font-family:Inter,sans-serif}
@@ -127,21 +182,20 @@ async function main() {
   .row{display:flex;gap:16px;flex-wrap:wrap}
   .phone{margin:0}
   .bezel{padding:7px;background:#232326;border-radius:38px;box-shadow:0 1px 2px rgba(0,0,0,.06),0 12px 32px rgba(0,0,0,.07)}
-  .screen{width:300px;height:616px;border-radius:31px;overflow:hidden;display:flex;flex-direction:column}
+  /* The same container declaration the editor's iframe uses. This sheet is
+     supposed to catch layout bugs, so it must not be laid out by rules of its
+     own — it did once, and the bug it hid was the tab bar falling off Home. */
+  .screen{${PHONE_CONTAINER_CSS}border-radius:31px}
   figcaption{font-size:11px;color:#a3a3a8;text-align:center;margin-top:7px;font-family:ui-monospace,monospace}
-  .icon{font-family:'Material Symbols Rounded';font-weight:400;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga'}
 </style></head><body>
-<h1>Theme preview — every seeded brand, every screen, both schemes</h1>
-<p class="lede">Rendered through resolveTheme() from packages/theme, against live API tokens and content. The same computation the Expo app runs.</p>
+<h1>Theme preview — every brand, every screen, both schemes</h1>
+<p class="lede">Rendered through resolveTheme() and the @wl/ui components, from ${source}. The same computation and the same components the Expo app runs.</p>
 ${sections.join('\n')}
 </body></html>`;
 
   const out = process.argv[2] ?? 'preview-proof.html';
   await writeFile(out, html, 'utf8');
-  console.log(`Wrote ${out} — ${tenants.length} brands × 2 schemes × 4 screens`);
-
+  console.log(`Wrote ${out} — ${brands.length} brands × 2 schemes × ${SCREENS.length} screens`);
 }
 
 void main();
-
-void React;

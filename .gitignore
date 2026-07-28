@@ -21,3 +21,4 @@ pnpm-debug.log*
 # Generated
 apps/api/openapi.json
 apps/web/preview-proof.html
+apps/web/art-proof.html

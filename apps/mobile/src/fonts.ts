@@ -20,7 +20,6 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk';
-import { FONT_PAIRINGS, type ResolvedTheme } from '@wl/theme';
 
 /**
  * All five pairings, bundled.
@@ -57,25 +56,9 @@ export const FONT_MAP = {
 export type BundledFont = keyof typeof FONT_MAP;
 
 /**
- * React Native has no font-weight synthesis for custom families — asking for
- * `fontWeight: 600` on a face that was loaded as Regular silently renders
- * Regular. So the family name itself must carry the weight, which is what this
- * resolves.
+ * Which of these families a given theme asks for is resolved by `@wl/ui`'s
+ * `fontFor(theme, role, weight, 'bundled')`, not here. The rule that a family
+ * name carries its weight is a rendering rule, and it has to hold in the admin
+ * preview as well as on the device — keeping a second copy of it in this file
+ * is how the two would drift.
  */
-export function rnFontFamily(
-  theme: ResolvedTheme,
-  role: 'display' | 'body',
-  weight?: number,
-): string {
-  const pairing = FONT_PAIRINGS.find((p) => p.id === theme.meta.pairingId);
-  if (!pairing) return 'System';
-
-  const face = role === 'display' ? pairing.display : pairing.body;
-  const resolvedWeight = weight ?? face.weight;
-  const key = `${face.family}-${resolvedWeight}`;
-
-  // Falls back to the face's own weight when an exact match is not bundled —
-  // DM Sans, for instance, maps semibold onto 700 rather than shipping a 600
-  // that Google does not reliably provide as a static.
-  return pairing.rnExports[key] ?? pairing.rnExports[`${face.family}-${face.weight}`] ?? 'System';
-}
