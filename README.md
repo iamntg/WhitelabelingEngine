@@ -10,7 +10,39 @@
 [![pnpm workspace](https://img.shields.io/badge/pnpm-workspace-F69220?style=flat-square&logo=pnpm&logoColor=white)](pnpm-workspace.yaml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1c1917?style=flat-square)](LICENSE)
 
+<br>
+
+### Try it live
+
+[![Open the admin tool](https://img.shields.io/badge/Open_the_admin_tool-7c3aed?style=for-the-badge&logo=react&logoColor=white)](https://wl-admin-ak5.pages.dev/)
+&nbsp;&nbsp;
+[![Open the branded app](https://img.shields.io/badge/Open_the_branded_app-e11d48?style=for-the-badge&logo=expo&logoColor=white)](https://wl-app-b20.pages.dev/)
+
+**[wl-admin-ak5.pages.dev](https://wl-admin-ak5.pages.dev/)** — where the owner picks their brand
+<br>
+**[wl-app-b20.pages.dev](https://wl-app-b20.pages.dev/)** — the app their customers get
+
 </div>
+
+<br>
+
+**The whole idea in 60 seconds.** Open both links side by side, then:
+
+1. In the **admin tool**, open **Olive & Ash Kitchen**.
+2. Change the **primary colour**. The phone preview updates as you type — that preview is the real React Native app running in an iframe, not a mockup.
+3. Try a colour nobody could read, like a pale yellow. The contrast engine holds the publish and offers a corrected shade that is guaranteed to actually clear the bar. You can override it, but only on purpose.
+4. Pick something legible and hit **Publish**.
+5. Reload the **branded app** tab. Same theme, same components, now on the phone.
+
+Step 5 is the point of the repository. Nothing was rebuilt to make those two agree — [they share the resolver *and* the renderer](#the-one-rule).
+
+> [!NOTE]
+> **A few honest things about the demo.**
+>
+> - The API runs on a free tier that sleeps after 15 minutes idle, so the **first load can take up to a minute**. Everything is instant after that.
+> - It is a **shared sandbox with no login**. Everyone edits the same three brands, so expect to find someone else's colours, and feel free to leave your own.
+> - A publish reaches the app within 30 seconds, which is the public cache window.
+> - Want your own copy? Everything below runs locally with one command, and the whole stack fits on free tiers: Postgres on Neon, the API on Render, both front ends on Cloudflare Pages.
 
 ---
 
@@ -75,7 +107,9 @@ The owner never sets a hover shade or a text colour. **The constrained input sur
 - **SC 1.4.3 Contrast (Minimum)**, 4.5:1, anything you read
 - **SC 1.4.11 Non-text Contrast**, 3:1, button fills, accent chips, graphics
 
-Below 3:1 blocks publish either way. Between 3:1 and 4.5:1 on a text pair is a warning that publishes only with an explicit acknowledgement.
+Text pairs fail below 3:1, warn between 3:1 and 4.5:1, and pass above it. Non-text pairs have no middle band: 3:1 or nothing.
+
+Either state holds the publish. The owner applies the suggested fix or explicitly acknowledges the pair, and the acknowledgement is sent with the publish request and re-checked server-side. What there is no route to is publishing an unreadable theme by accident.
 
 Every suggested fix is asserted to actually resolve its pair, a one-click fix that fixes nothing is worse than offering none.
 
@@ -308,6 +342,28 @@ Deliberately out of scope so far, and worth naming rather than discovering:
 - **The mobile app has never run on a device or simulator.** It typechecks, its font bundle is asserted against the registry, its fetch-and-resolve path is verified from Node against the live API, and `expo export --platform ios` produces a Hermes bundle, so Metro resolves the whole tree, `@wl/ui` and `react-native-svg` included. But nothing has been rendered on a screen with a touch digitiser attached to it, and the carousel's drag behaviour in particular has only ever been exercised with a mouse.
 - **A stack, rather than four tabs.** Tapping a tab switches screens on both hosts, but Item is only reachable from the preview's screen switcher, on the phone there is no way to press a catalogue row and push the detail. Item is wired to keep the catalogue tab lit for exactly this reason; what is missing is the push, not the mapping.
 - **`account` has no screen.** The tab is in the seeded content because a real app has one. `screenForTab` returns null for it and both hosts leave the current screen up.
+
+## Design
+
+The admin tool was designed in **Claude Design** before any of it was built, and this repository is a replication of that design in React.
+
+<p align="center">
+  <a href="https://claude.ai/code/artifact/e7327603-ec45-4851-99de-87955cf08479">
+    <img src="https://img.shields.io/badge/Claude_Design-view_the_original-c96442?style=for-the-badge&logo=claude&logoColor=white" alt="View the original design in Claude Design">
+  </a>
+</p>
+
+Both screens are exported into [`design/`](design/) and kept in the repo as the reference the implementation is checked against:
+
+| File | Becomes |
+| --- | --- |
+| `design/Brand List.dc.html` | `apps/web/src/features/brands/` |
+| `design/Theme Editor.dc.html` | `apps/web/src/features/editor/` |
+
+Keeping the export around is what makes "does this match?" a question with an answer. It also records the places the build deliberately departed from it, which are worth naming:
+
+- **The Ember preset is the design's own theme**, with one change: its accent moved from `#f5c518` to the deepest gold that still separates from white. The design was right about the palette and the contrast engine was right about that one swatch, so the engine won. The reasoning is in the comment above it in `packages/theme/src/presets.ts`.
+- **The phone preview stopped being a web page pretending to be a phone.** The export draws it in CSS, using `grid-template`, CSS transitions and Material Symbols' variable `FILL` axis. Here it is [the actual React Native app](#the-one-rule) in an iframe, so all three had to go: React Native has no CSS grid and no variable font axes. The 13 icons are [SVG paths](packages/ui/src/icons.tsx) now. The design was not wrong, it was just describing a surface that had to survive a device.
 
 ## License
 

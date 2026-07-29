@@ -22,3 +22,5 @@ pnpm-debug.log*
 apps/api/openapi.json
 apps/web/preview-proof.html
 apps/web/art-proof.html
+
+docs/DEPLOY.md
