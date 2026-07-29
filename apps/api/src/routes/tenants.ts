@@ -7,7 +7,7 @@ import {
 import { defaultTokens, diffTokens, getPreset } from '@wl/theme';
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { CONTENT_BY_VERTICAL } from '../../prisma/fixtures/content.js';
+import { CONTENT_BY_VERTICAL } from '../fixtures/content.js';
 import { badRequest, unauthorized } from '../errors.js';
 import { parseStoredTokens, swatchesOf, themeNameOf, uniqueSlug } from '../lib/theme-service.js';
 

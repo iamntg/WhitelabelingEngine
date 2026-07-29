@@ -1,6 +1,6 @@
 import { PrismaClient, type Prisma } from '@prisma/client';
 import { SampleContent } from '@wl/api-client';
-import { CONTENT_BY_VERTICAL } from './fixtures/content.js';
+import { CONTENT_BY_VERTICAL } from '../src/fixtures/content.js';
 
 /**
  * Rewrites every tenant's sample content from the current fixtures.

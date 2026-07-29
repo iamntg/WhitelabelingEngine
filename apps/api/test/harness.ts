@@ -3,7 +3,7 @@ import { getPreset, type ThemeTokens } from '@wl/theme';
 import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../src/app.js';
 import { loadConfig } from '../src/config.js';
-import { RESTAURANT_CONTENT } from '../prisma/fixtures/content.js';
+import { RESTAURANT_CONTENT } from '../src/fixtures/content.js';
 
 /**
  * An in-memory stand-in for the handful of Prisma calls the routes make.

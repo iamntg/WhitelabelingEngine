@@ -1,0 +1,6 @@
+# The admin tool routes on the History API (`/brands/:id/theme`), so a static
+# host must serve index.html for any path rather than looking for a file that
+# was never built. Without this, opening the editor works but refreshing it 404s.
+#
+# Read by Cloudflare Pages and Netlify. Vercel ignores it — see docs/DEPLOY.md.
+/*    /index.html   200

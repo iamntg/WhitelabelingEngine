@@ -5,7 +5,7 @@ import {
   validateForPublish,
   type ThemeTokens,
 } from '@wl/theme';
-import { CONTENT_BY_VERTICAL } from './fixtures/content.js';
+import { CONTENT_BY_VERTICAL } from '../src/fixtures/content.js';
 
 /**
  * Seeds three demo brands, one per vertical, each with a distinct published
