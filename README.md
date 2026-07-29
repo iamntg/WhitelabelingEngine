@@ -5,7 +5,7 @@
 **A non-technical business owner picks six things. Their web app and their phone app both become theirs, and agree, pixel for pixel, on what that means.**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](tsconfig.base.json)
-[![Tests](https://img.shields.io/badge/tests-304%20passing-0f766e?style=flat-square)](#tests)
+[![Tests](https://img.shields.io/badge/tests-312%20passing-0f766e?style=flat-square)](#tests)
 [![WCAG](https://img.shields.io/badge/WCAG-1.4.3%20%C2%B7%201.4.11-0f766e?style=flat-square)](#contrast-is-a-gate-not-a-hint)
 [![pnpm workspace](https://img.shields.io/badge/pnpm-workspace-F69220?style=flat-square&logo=pnpm&logoColor=white)](pnpm-workspace.yaml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1c1917?style=flat-square)](LICENSE)
@@ -37,7 +37,7 @@
 Step 5 is the point of the repository. Nothing was rebuilt to make those two agree — [they share the resolver *and* the renderer](#the-one-rule).
 
 > [!NOTE]
-> **A few honest things about the demo.**
+> **A few things about the demo.**
 >
 > - The API runs on a free tier that sleeps after 15 minutes idle, so the **first load can take up to a minute**. Everything is instant after that.
 > - It is a **shared sandbox with no login**. Everyone edits the same three brands, so expect to find someone else's colours, and feel free to leave your own.
@@ -157,6 +157,8 @@ pnpm --filter @wl/mobile web          # the same app, in a browser tab
 It fetches the published theme and content for `EXPO_PUBLIC_TENANT_SLUG`, caches both in AsyncStorage, applies `resolveTheme()` and renders `@wl/ui`, the same components the admin preview draws. On a physical device `localhost` is the device itself, so use your machine's LAN address.
 
 `web` runs the real React Native source through `react-native-web` on <http://localhost:8081>, exercising the same components, the same fetch and cache path (AsyncStorage falls back to `localStorage`) and the same resolver as the native build. Worth knowing:
+
+- **A desktop browser gets the app inside a drawn phone**, a `(pointer: coarse)` media query and a width threshold decide, and a phone's browser gets the app full-bleed with no frame at all. It is a host decision and nothing below `ThemeProvider` knows it happened: `@wl/ui` is handed a width of 390 and draws what it draws on a device. Without it the two-column card grid stretches across 1440pt, which is not broken but stops reading as the thing it is. See `apps/mobile/src/device-frame.ts`.
 
 - It needs `http://localhost:8081` in the API's `CORS_ORIGINS`. A browser sends an `Origin` header where a device does not, so this is the one place the web target is stricter than native.
 - It is a **debugging** view of the mobile app, not the customer-facing preview. For "what will this brand look like", use the admin app's phone preview, which covers all four screens and both schemes.
@@ -316,7 +318,7 @@ Neutral greys, near-black text, and exactly one muted accent for interactive sta
 ## Tests
 
 ```bash
-pnpm test        # 304 tests, six workspaces
+pnpm test        # 312 tests, six workspaces
 pnpm typecheck   # strict, and no `any`
 ```
 
@@ -327,7 +329,7 @@ pnpm typecheck   # strict, and no `any`
 | `packages/api-client` | 19 | the wire contract, round-tripped |
 | `apps/api` | 36 | routes, auth, membership, publish, rollback, against real Postgres |
 | `apps/web` | 77 | editor panel, publish modal, preview host facts, draft store, chrome chroma |
-| `apps/mobile` | 4 | the bundled font set, asserted against the registry |
+| `apps/mobile` | 12 | the bundled font set asserted against the registry, and which browsers get a drawn device |
 
 `apps/api`'s tests need the Docker Postgres up (`pnpm setup` gets you there). Everything else runs cold.
 

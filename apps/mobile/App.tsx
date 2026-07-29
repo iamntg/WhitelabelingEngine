@@ -9,7 +9,7 @@ import {
 } from '@wl/ui';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -21,6 +21,7 @@ import {
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FONT_MAP } from './src/fonts.js';
 import { loadApp, tenantSlug, type AppData } from './src/cache.js';
+import { PhoneShell, useDeviceFrame } from './src/PhoneShell.js';
 
 /**
  * The app.
@@ -28,7 +29,8 @@ import { loadApp, tenantSlug, type AppData } from './src/cache.js';
  * Every pixel below `ThemeProvider` comes from `@wl/ui` — the same components
  * the admin tool's phone preview renders through react-native-web. This file
  * owns only the things a host owns: fetching, the font bundle, the device's
- * colour scheme, and the safe area.
+ * colour scheme, the safe area, and — on the `web` target — whether there is a
+ * device to draw around all of it.
  *
  * That division is the point. When an owner changes a colour and looks at the
  * preview, they are looking at this screen; there is no second implementation
@@ -55,6 +57,9 @@ function Root() {
   const scheme = useColorScheme() ?? 'light';
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  // Non-null only in a desktop browser. On a device, and on a phone's browser,
+  // the window is the phone and everything below behaves exactly as it did.
+  const frame = useDeviceFrame();
 
   useEffect(() => {
     let cancelled = false;
@@ -76,20 +81,32 @@ function Root() {
     };
   }, []);
 
+  // Framing happens once, around whatever the app currently is. Loading and
+  // failing inside the device too is the honest version: those are states a
+  // customer's phone can be in, and a desktop visitor should see them there.
+  const host = (node: ReactNode) =>
+    frame ? (
+      <PhoneShell frame={frame} scheme={scheme}>
+        {node}
+      </PhoneShell>
+    ) : (
+      node
+    );
+
   if (!fontsLoaded || status.kind === 'loading') {
-    return (
+    return host(
       <View style={styles.centre}>
         <ActivityIndicator />
-      </View>
+      </View>,
     );
   }
 
   if (status.kind === 'error') {
-    return (
+    return host(
       <View style={styles.centre}>
         <Text style={styles.errorTitle}>Could not load {tenantSlug()}</Text>
         <Text style={styles.errorBody}>{status.message}</Text>
-      </View>
+      </View>,
     );
   }
 
@@ -99,7 +116,7 @@ function Root() {
   const theme = resolveTheme(status.data.theme.tokens, { scheme });
   const content = status.data.content.content;
 
-  return (
+  return host(
     // `bundled`: expo-font registers each weight as its own family, so the
     // family name carries the weight. The preview loads the same faces from
     // Google under their real names and passes `css`. See `FontStrategy`.
@@ -115,12 +132,18 @@ function Root() {
           const next = screenForTab(tabId);
           if (next) setScreen(next);
         }}
-        width={width}
-        insets={{ top: insets.top, bottom: insets.bottom }}
+        // The three facts that change inside a drawn device. The width is the
+        // frame's, not the window's, or `@wl/ui` would resolve its card grid to
+        // a desktop column width and overflow the screen it sits in. The insets
+        // belong to a real device and are zero here; the 9:41 stand-in takes
+        // their place, the same one the admin preview draws.
+        width={frame ? frame.width : width}
+        insets={frame ? { top: 0, bottom: 0 } : { top: insets.top, bottom: insets.bottom }}
+        statusBar={frame ? 'simulated' : 'device'}
       >
         <Screen screen={screen} content={content} />
       </AppShell>
-    </ThemeProvider>
+    </ThemeProvider>,
   );
 }
 
